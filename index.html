@@ -6,65 +6,17 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Башня из кубиков — Физическая Игра</title>
     
-    <!-- Динамическая загрузка Matter.js с перебором CDN -->
+    <!-- Matter.js - загрузка с нескольких CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
     <script>
-        const CDN_SOURCES = [
-            'https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js',
-            'https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js',
-            'https://unpkg.com/matter-js@0.19.0/build/matter.min.js'
-        ];
-        
-        let loadAttempts = 0;
-        
-        function loadMatterJS() {
-            return new Promise((resolve, reject) => {
-                if (typeof Matter !== 'undefined') {
-                    resolve();
-                    return;
-                }
-                
-                if (loadAttempts >= CDN_SOURCES.length) {
-                    reject(new Error('Все CDN недоступны'));
-                    return;
-                }
-                
-                const src = CDN_SOURCES[loadAttempts++];
-                console.log(`Попытка ${loadAttempts}: загрузка из ${src}`);
-                
-                const script = document.createElement('script');
-                script.src = src;
-                script.async = true;
-                script.onload = () => {
-                    if (typeof Matter !== 'undefined') {
-                        console.log('✅ Matter.js загружен из:', src);
-                        resolve();
-                    } else {
-                        loadMatterJS().then(resolve).catch(reject);
-                    }
-                };
-                script.onerror = () => {
-                    console.warn('❌ Не удалось загрузить:', src);
-                    loadMatterJS().then(resolve).catch(reject);
-                };
-                document.head.appendChild(script);
-            });
+        if (typeof Matter === 'undefined') {
+            document.write('<scr'+'ipt src="https://unpkg.com/matter-js@0.19.0/build/matter.min.js"></scr'+'ipt>');
         }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            loadMatterJS().then(() => {
-                if (typeof initGame === 'function') initGame();
-            }).catch((error) => {
-                console.error('Критическая ошибка:', error);
-                document.body.innerHTML = `
-                    <div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#1a1a2e;color:white;flex-direction:column;padding:20px;text-align:center;font-family:sans-serif;">
-                        <h1 style="color:#e94560;font-size:2rem;margin-bottom:20px;">⚠️ Ошибка загрузки</h1>
-                        <p style="font-size:1.2rem;max-width:400px;margin-bottom:10px;">Не удалось загрузить физический движок Matter.js.</p>
-                        <p style="font-size:1rem;max-width:400px;color:#aaa;margin-bottom:25px;">Проверьте подключение к интернету и обновите страницу.</p>
-                        <button onclick="location.reload()" style="padding:15px 40px;background:linear-gradient(45deg,#e94560,#950740);border:none;border-radius:30px;color:white;font-size:1.1rem;cursor:pointer;box-shadow:0 5px 20px rgba(233,69,96,0.5);">🔄 Обновить страницу</button>
-                    </div>
-                `;
-            });
-        });
+    </script>
+    <script>
+        if (typeof Matter === 'undefined') {
+            document.write('<scr'+'ipt src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></scr'+'ipt>');
+        }
     </script>
     
     <style>
@@ -458,17 +410,9 @@
         }
 
         @keyframes fall {
-            0% { 
-                transform: translateY(0) translateX(0) rotate(0deg); 
-                opacity: 1; 
-            }
-            50% {
-                opacity: 0.8;
-            }
-            100% { 
-                transform: translateY(calc(100vh + 20px)) translateX(50px) rotate(360deg); 
-                opacity: 0.2; 
-            }
+            0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(calc(100vh + 20px)) translateX(50px) rotate(360deg); opacity: 0.2; }
         }
 
         @keyframes pulse {
@@ -606,7 +550,7 @@
         </div>
 
         <div id="tilt-indicator">📐 Наклон: 0°</div>
-        <div id="difficulty-indicator">⚡ Сложность: <span id="difficulty-level">1</span></div>
+        <div id="difficulty-indicator">💪 Сложность: <span id="difficulty-level">1</span></div>
         <div class="hud-panel" id="height-counter">🧱 Высота: <span id="current-height">0</span></div>
 
         <div class="controls-hint">
@@ -661,10 +605,22 @@
     </div>
 
     <script>
-        // ============ ГЛАВНАЯ ФУНКЦИЯ ИГРЫ ============
-        // Вызывается только после успешной загрузки Matter.js
+        // ============ ПРОВЕРКА ЗАГРУЗКИ MATTER.JS ============
+        if (typeof Matter === 'undefined') {
+            document.addEventListener('DOMContentLoaded', function() {
+                document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#1a1a2e;color:white;flex-direction:column;padding:20px;text-align:center;font-family:sans-serif;">' +
+                    '<h1 style="color:#e94560;font-size:2rem;margin-bottom:20px;">⚠️ Ошибка загрузки</h1>' +
+                    '<p style="font-size:1.2rem;max-width:400px;margin-bottom:10px;">Не удалось загрузить Matter.js</p>' +
+                    '<p style="font-size:1rem;max-width:400px;color:#aaa;margin-bottom:25px;">Проверьте подключение к интернету</p>' +
+                    '<button onclick="location.reload()" style="padding:15px 40px;background:linear-gradient(45deg,#e94560,#950740);border:none;border-radius:30px;color:white;font-size:1.1rem;cursor:pointer;">🔄 Обновить</button>' +
+                    '</div>';
+            });
+        } else {
+            initGame();
+        }
+
         function initGame() {
-            const { Engine, Render, Runner, Bodies, Composite, Body, Events } = Matter;
+            const { Engine, Render, Runner, Bodies, Composite, Body, Events, Sleeping } = Matter;
 
             // ============ ПЕРЕМЕННЫЕ ============
             let engine, render, runner;
@@ -710,7 +666,9 @@
             let blockSpawnTime = 0;
             const BLOCK_SPAWN_DELAY = 200;
             let blockFadeInInterval = null;
+            let aiAnimInterval = null; // Отдельная переменная для интервала ИИ
             let currentBlockBaseColor = null;
+            let lastTouchTime = 0; // Защита от двойного клика
 
             // ============ УТИЛИТЫ ============
             function hexToRgba(hex, alpha) {
@@ -816,6 +774,7 @@
                 }
             }
 
+            // ============ ФИЗИКА ============
             function initPhysics() {
                 const placeholder = document.getElementById('canvas-placeholder');
                 placeholder.innerHTML = '';
@@ -902,28 +861,14 @@
                 }
             }
 
-            window.startGame = function(mode) {
-                initAudio();
-                gameMode = mode;
-                scores = { p1: 0, p2: 0 };
-                document.getElementById('score-p1').innerText = '0';
-                document.getElementById('score-p2').innerText = '0';
-                
-                const p2Label = mode === 'ai' ? '🤖' : '🔴';
-                const p2Color = mode === 'ai' ? '#00f5d4' : '#0f3460';
-                document.getElementById('p2-score-box').innerHTML = `${p2Label} <span id="score-p2" class="score-val" style="color:${p2Color};">0</span>`;
-                
-                document.getElementById('menu-screen').classList.add('hidden');
-                document.getElementById('hud-favicon').style.display = 'block';
-                createSnow();
-                initPhysics();
-                resetRoundState();
-            };
-
             function resetRoundState() {
                 if (blockFadeInInterval) {
                     clearInterval(blockFadeInInterval);
                     blockFadeInInterval = null;
+                }
+                if (aiAnimInterval) {
+                    clearInterval(aiAnimInterval);
+                    aiAnimInterval = null;
                 }
                 
                 blocks.forEach(b => {
@@ -967,6 +912,7 @@
                 spawnBlock();
             }
 
+            // ============ СПАВН БЛОКА (ИСПРАВЛЕННАЯ ФИЗИКА) ============
             function spawnBlock() {
                 if (!gameActive) return;
                 isBlockPlaced = false;
@@ -994,10 +940,16 @@
                 
                 currentBlockBaseColor = baseColor;
 
+                // ИСПРАВЛЕНИЕ: Блок создаётся как динамический (isStatic: false) 
+                // и сразу "усыпляется" (isSleeping: true). Это избегает бага Matter.js,
+                // когда при переключении setStatic(true->false) теряется масса.
                 currentBlock = Bodies.rectangle(CANVAS_WIDTH / 2, spawnY, BLOCK_WIDTH, BLOCK_HEIGHT, {
-                    isStatic: true,
+                    isStatic: false,
+                    isSleeping: true,
                     friction: 0.8,
+                    frictionStatic: 0.9,
                     restitution: 0.05,
+                    density: 0.001,
                     render: { 
                         fillStyle: hexToRgba(baseColor, 0),
                         strokeStyle: 'rgba(255, 255, 255, 0)',
@@ -1007,8 +959,11 @@
                     label: 'block'
                 });
                 
+                // Замораживаем скорость, чтобы блок точно не двигался пока спит
+                Body.setVelocity(currentBlock, { x: 0, y: 0 });
+                Body.setAngularVelocity(currentBlock, 0);
+                
                 Composite.add(engine.world, currentBlock);
-                Body.scale(currentBlock, 0.8, 0.8);
                 
                 blockSpawnTime = Date.now();
                 startBlockFadeInAnimation();
@@ -1020,14 +975,13 @@
                 }
             }
 
+            // ============ АНИМАЦИЯ ПОЯВЛЕНИЯ (ТОЛЬКО ПРОЗРАЧНОСТЬ) ============
+            // ИСПРАВЛЕНИЕ: убрано Body.scale() - оно искажало хитбокс
             function startBlockFadeInAnimation() {
                 if (blockFadeInInterval) clearInterval(blockFadeInInterval);
                 
                 let opacity = 0;
-                let scale = 0.8;
-                const targetScale = 1.0;
                 const fadeStep = 0.06;
-                const scaleStep = (targetScale - scale) / (1 / fadeStep);
                 
                 blockFadeInInterval = setInterval(() => {
                     if (!currentBlock || !gameActive) {
@@ -1037,38 +991,22 @@
                     }
                     
                     opacity += fadeStep;
-                    scale += scaleStep;
                     
                     if (opacity >= 1) {
                         opacity = 1;
-                        scale = targetScale;
                         clearInterval(blockFadeInInterval);
                         blockFadeInInterval = null;
                     }
                     
                     currentBlock.render.fillStyle = hexToRgba(currentBlockBaseColor, opacity);
                     currentBlock.render.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-                    
-                    if (scale < targetScale) {
-                        const currentScaleFactor = currentBlock.plugin?.currentScale || 0.8;
-                        const scaleFactor = scale / currentScaleFactor;
-                        Body.scale(currentBlock, scaleFactor, scaleFactor);
-                        
-                        if (!currentBlock.plugin) currentBlock.plugin = {};
-                        currentBlock.plugin.currentScale = scale;
-                    } else {
-                        if (currentBlock.plugin?.currentScale) {
-                            const finalScale = targetScale / currentBlock.plugin.currentScale;
-                            Body.scale(currentBlock, finalScale, finalScale);
-                            delete currentBlock.plugin.currentScale;
-                        }
-                    }
                 }, 25);
             }
 
+            // ============ УПРАВЛЕНИЕ ============
             window.addEventListener('keydown', (e) => {
                 keys[e.code] = true;
-                if (['Space'].includes(e.code)) {
+                if (e.code === 'Space') {
                     e.preventDefault();
                     if (!gameActive || isBlockPlaced || !currentBlock) return;
                     if (gameMode === 'ai' && currentPlayer === 2) return;
@@ -1098,7 +1036,7 @@
                 if (gameMode === 'ai' && currentPlayer === 2) return;
                 if (Date.now() - blockSpawnTime < BLOCK_SPAWN_DELAY) return;
 
-                const canvas = render?.canvas;
+                const canvas = render ? render.canvas : null;
                 if (!canvas) return;
                 
                 const rect = canvas.getBoundingClientRect();
@@ -1110,12 +1048,13 @@
             });
 
             window.addEventListener('touchmove', (e) => {
-                e.preventDefault();
                 if (!gameActive || isBlockPlaced || !currentBlock) return;
                 if (gameMode === 'ai' && currentPlayer === 2) return;
                 if (Date.now() - blockSpawnTime < BLOCK_SPAWN_DELAY) return;
+                
+                e.preventDefault();
 
-                const canvas = render?.canvas;
+                const canvas = render ? render.canvas : null;
                 if (!canvas) return;
                 
                 const rect = canvas.getBoundingClientRect();
@@ -1135,9 +1074,16 @@
                 touchStartPos = { x: touch.clientX, y: touch.clientY };
             }, { passive: true });
 
+            // ИСПРАВЛЕНИЕ: touchend с preventDefault блокирует последующий click
             window.addEventListener('touchend', (e) => {
-                if (!gameActive || isBlockPlaced || !currentBlock) return;
-                if (gameMode === 'ai' && currentPlayer === 2) return;
+                if (!gameActive || isBlockPlaced || !currentBlock) {
+                    touchStartPos = null;
+                    return;
+                }
+                if (gameMode === 'ai' && currentPlayer === 2) {
+                    touchStartPos = null;
+                    return;
+                }
                 
                 if (touchStartPos) {
                     const touch = e.changedTouches[0];
@@ -1146,18 +1092,23 @@
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     
                     if (distance < 15) {
+                        e.preventDefault(); // Блокируем последующий click
+                        lastTouchTime = Date.now();
                         dropBlock();
                     }
                     touchStartPos = null;
                 }
-            }, { passive: true });
+            }, { passive: false });
 
-            window.addEventListener('click', () => {
+            // ИСПРАВЛЕНИЕ: click игнорируется если был недавний touch
+            window.addEventListener('click', (e) => {
+                if (Date.now() - lastTouchTime < 500) return; // Игнорируем клик после тача
                 if (!gameActive || isBlockPlaced || !currentBlock) return;
                 if (gameMode === 'ai' && currentPlayer === 2) return;
                 dropBlock();
             });
 
+            // ============ ДРОП БЛОКА (ИСПРАВЛЕННАЯ ФИЗИКА) ============
             function dropBlock() {
                 if (isBlockPlaced || !currentBlock) return;
                 
@@ -1166,18 +1117,19 @@
                     blockFadeInInterval = null;
                 }
                 
+                // Устанавливаем финальные цвета
                 if (currentBlockBaseColor) {
                     currentBlock.render.fillStyle = currentBlockBaseColor;
                     currentBlock.render.strokeStyle = '#ffffff';
                 }
-                if (currentBlock.plugin?.currentScale) {
-                    const finalScale = 1.0 / currentBlock.plugin.currentScale;
-                    Body.scale(currentBlock, finalScale, finalScale);
-                    delete currentBlock.plugin.currentScale;
-                }
                 
                 isBlockPlaced = true;
-                Body.setStatic(currentBlock, false);
+                
+                // ИСПРАВЛЕНИЕ: вместо setStatic(false) просто будим блок
+                // и обнуляем скорости - это сохраняет массу и инерцию
+                Sleeping.set(currentBlock, false);
+                Body.setVelocity(currentBlock, { x: 0, y: 0 });
+                Body.setAngularVelocity(currentBlock, 0);
                 
                 blocks.push(currentBlock);
                 blockCount++;
@@ -1221,8 +1173,15 @@
                 }, 3000);
             }
 
+            // ============ ХОД ИИ (С ЗАЩИТОЙ) ============
             function makeAIMove() {
                 if (!gameActive || !currentBlock) return;
+                
+                // Очищаем предыдущий интервал если есть
+                if (aiAnimInterval) {
+                    clearInterval(aiAnimInterval);
+                    aiAnimInterval = null;
+                }
 
                 let targetX = CANVAS_WIDTH / 2;
                 if (blocks.length > 0) {
@@ -1239,16 +1198,19 @@
                 const steps = 15;
                 let currentStep = 0;
                 
-                const aiAnim = setInterval(() => {
+                aiAnimInterval = setInterval(() => {
+                    // ИСПРАВЛЕНИЕ: защита от null currentBlock
                     if (!gameActive || !currentBlock) { 
-                        clearInterval(aiAnim); 
+                        clearInterval(aiAnimInterval);
+                        aiAnimInterval = null;
                         return; 
                     }
                     currentX += (targetX - currentX) / (steps - currentStep + 1);
                     Body.setPosition(currentBlock, { x: currentX, y: spawnY });
                     currentStep++;
                     if (currentStep >= steps) {
-                        clearInterval(aiAnim);
+                        clearInterval(aiAnimInterval);
+                        aiAnimInterval = null;
                         dropBlock();
                     }
                 }, 40);
@@ -1310,6 +1272,7 @@
                 document.getElementById('score-p2').innerText = scores.p2;
             }
 
+            // ИСПРАВЛЕНИЕ: убраны пустые скобки в именах победителей
             function showGameOverScreen(winner) {
                 document.getElementById('hud-favicon').style.display = 'none';
                 const screen = document.getElementById('gameover-screen');
@@ -1327,12 +1290,31 @@
                         msg.innerText = `ИИ оказался точнее. Высота: ${maxBlockCount} кубиков`;
                     }
                 } else {
-                    const winnerName = winner === 1 ? 'Игрок 1 (🔴)' : 'Игрок 2 (🔵)';
+                    const winnerName = winner === 1 ? 'Игрок 1 🔴' : 'Игрок 2 🔵';
                     title.innerText = "💥 БАШНЯ РУХНУЛА!";
                     msg.innerText = `🏆 Победил ${winnerName}! Высота: ${maxBlockCount} кубиков`;
                     playSound('win');
                 }
             }
+
+            // ============ ГЛОБАЛЬНЫЕ ФУНКЦИИ ============
+            window.startGame = function(mode) {
+                initAudio();
+                gameMode = mode;
+                scores = { p1: 0, p2: 0 };
+                document.getElementById('score-p1').innerText = '0';
+                document.getElementById('score-p2').innerText = '0';
+                
+                const p2Label = mode === 'ai' ? '🤖' : '🔴';
+                const p2Color = mode === 'ai' ? '#00f5d4' : '#0f3460';
+                document.getElementById('p2-score-box').innerHTML = `${p2Label} <span id="score-p2" class="score-val" style="color:${p2Color};">0</span>`;
+                
+                document.getElementById('menu-screen').classList.add('hidden');
+                document.getElementById('hud-favicon').style.display = 'block';
+                createSnow();
+                initPhysics();
+                resetRoundState();
+            };
 
             window.restartRound = function() {
                 const screen = document.getElementById('gameover-screen');
@@ -1341,10 +1323,15 @@
                 resetRoundState();
             };
 
+            // ИСПРАВЛЕНИЕ: очищаем aiAnimInterval при выходе в меню
             window.backToMenu = function() {
                 if (blockFadeInInterval) {
                     clearInterval(blockFadeInInterval);
                     blockFadeInInterval = null;
+                }
+                if (aiAnimInterval) {
+                    clearInterval(aiAnimInterval);
+                    aiAnimInterval = null;
                 }
                 
                 const screen = document.getElementById('gameover-screen');
@@ -1399,22 +1386,12 @@
             function showToast(message) {
                 const toast = document.createElement('div');
                 toast.style.cssText = `
-                    position: fixed;
-                    bottom: 100px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: rgba(0,0,0,0.9);
-                    color: white;
-                    padding: 12px 24px;
-                    border-radius: 12px;
-                    z-index: 100;
-                    font-size: 1rem;
-                    border: 1px solid rgba(255,255,255,0.1);
-                    backdrop-filter: blur(10px);
-                    animation: fadeInOut 2s ease forwards;
-                    pointer-events: none;
-                    max-width: 90%;
-                    text-align: center;
+                    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+                    background: rgba(0,0,0,0.9); color: white; padding: 12px 24px;
+                    border-radius: 12px; z-index: 100; font-size: 1rem;
+                    border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+                    animation: fadeInOut 2s ease forwards; pointer-events: none;
+                    max-width: 90%; text-align: center;
                 `;
                 toast.innerText = message;
                 document.body.appendChild(toast);
