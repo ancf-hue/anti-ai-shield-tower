@@ -6,29 +6,65 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Башня из кубиков — Физическая Игра</title>
     
-    <!-- Matter.js с тройным fallback на разные CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+    <!-- Динамическая загрузка Matter.js с перебором CDN -->
     <script>
-        if (typeof Matter === 'undefined') {
-            document.write('<script src="https://unpkg.com/matter-js@0.19.0/build/matter.min.js"><\/script>');
-        }
-    </script>
-    <script>
-        if (typeof Matter === 'undefined') {
-            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"><\/script>');
-        }
-    </script>
-    <script>
-        if (typeof Matter === 'undefined') {
-            document.addEventListener('DOMContentLoaded', function() {
-                document.body.innerHTML = '<div style="color:white;padding:40px;text-align:center;font-family:sans-serif;background:#1a1a2e;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;">' +
-                    '<h1 style="font-size:2rem;margin-bottom:20px;">⚠️ Ошибка загрузки</h1>' +
-                    '<p style="margin-bottom:15px;">Не удалось загрузить физический движок Matter.js.</p>' +
-                    '<p style="margin-bottom:20px;">Проверьте подключение к интернету и обновите страницу.</p>' +
-                    '<button onclick="location.reload()" style="padding:12px 30px;background:#e94560;color:white;border:none;border-radius:25px;font-size:1rem;cursor:pointer;">🔄 Обновить</button>' +
-                    '</div>';
+        const CDN_SOURCES = [
+            'https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js',
+            'https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js',
+            'https://unpkg.com/matter-js@0.19.0/build/matter.min.js'
+        ];
+        
+        let loadAttempts = 0;
+        
+        function loadMatterJS() {
+            return new Promise((resolve, reject) => {
+                if (typeof Matter !== 'undefined') {
+                    resolve();
+                    return;
+                }
+                
+                if (loadAttempts >= CDN_SOURCES.length) {
+                    reject(new Error('Все CDN недоступны'));
+                    return;
+                }
+                
+                const src = CDN_SOURCES[loadAttempts++];
+                console.log(`Попытка ${loadAttempts}: загрузка из ${src}`);
+                
+                const script = document.createElement('script');
+                script.src = src;
+                script.async = true;
+                script.onload = () => {
+                    if (typeof Matter !== 'undefined') {
+                        console.log('✅ Matter.js загружен из:', src);
+                        resolve();
+                    } else {
+                        loadMatterJS().then(resolve).catch(reject);
+                    }
+                };
+                script.onerror = () => {
+                    console.warn('❌ Не удалось загрузить:', src);
+                    loadMatterJS().then(resolve).catch(reject);
+                };
+                document.head.appendChild(script);
             });
         }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMatterJS().then(() => {
+                if (typeof initGame === 'function') initGame();
+            }).catch((error) => {
+                console.error('Критическая ошибка:', error);
+                document.body.innerHTML = `
+                    <div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#1a1a2e;color:white;flex-direction:column;padding:20px;text-align:center;font-family:sans-serif;">
+                        <h1 style="color:#e94560;font-size:2rem;margin-bottom:20px;">⚠️ Ошибка загрузки</h1>
+                        <p style="font-size:1.2rem;max-width:400px;margin-bottom:10px;">Не удалось загрузить физический движок Matter.js.</p>
+                        <p style="font-size:1rem;max-width:400px;color:#aaa;margin-bottom:25px;">Проверьте подключение к интернету и обновите страницу.</p>
+                        <button onclick="location.reload()" style="padding:15px 40px;background:linear-gradient(45deg,#e94560,#950740);border:none;border-radius:30px;color:white;font-size:1.1rem;cursor:pointer;box-shadow:0 5px 20px rgba(233,69,96,0.5);">🔄 Обновить страницу</button>
+                    </div>
+                `;
+            });
+        });
     </script>
     
     <style>
@@ -525,113 +561,34 @@
         }
 
         @media (max-width: 600px) {
-            .controls-hint {
-                display: none;
-            }
-            .btn {
-                width: 220px;
-                padding: 12px 20px;
-                font-size: 1rem;
-            }
-            h1 {
-                font-size: 2rem;
-            }
-            .hud-panel {
-                padding: 6px 12px;
-                font-size: 0.8rem;
-            }
-            #turn-indicator {
-                font-size: 0.9rem;
-            }
-            #height-counter {
-                font-size: 0.9rem;
-                padding: 6px 14px;
-                bottom: 15px;
-            }
-            #tilt-indicator {
-                font-size: 0.9rem;
-                padding: 6px 14px;
-                top: 70px;
-            }
-            #difficulty-indicator {
-                font-size: 0.7rem;
-                padding: 4px 12px;
-                top: 115px;
-            }
-            #hud-favicon {
-                width: 40px;
-                height: 40px;
-                top: 12px;
-            }
-            #hud {
-                top: 15px;
-                padding: 0 12px;
-            }
-            .record-badge {
-                font-size: 0.8rem;
-                padding: 6px 14px;
-                top: 155px;
-            }
-            #mobile-controls {
-                display: flex !important;
-                bottom: 80px;
-            }
-            .btn-mobile {
-                width: 45px;
-                height: 45px;
-                font-size: 18px;
-            }
-            .support-section {
-                padding: 15px;
-                margin-top: 15px;
-            }
-            .support-title {
-                font-size: 1.2rem;
-            }
-            .phone-number {
-                font-size: 0.9rem;
-                padding: 10px 16px;
-            }
+            .controls-hint { display: none; }
+            .btn { width: 220px; padding: 12px 20px; font-size: 1rem; }
+            h1 { font-size: 2rem; }
+            .hud-panel { padding: 6px 12px; font-size: 0.8rem; }
+            #turn-indicator { font-size: 0.9rem; }
+            #height-counter { font-size: 0.9rem; padding: 6px 14px; bottom: 15px; }
+            #tilt-indicator { font-size: 0.9rem; padding: 6px 14px; top: 70px; }
+            #difficulty-indicator { font-size: 0.7rem; padding: 4px 12px; top: 115px; }
+            #hud-favicon { width: 40px; height: 40px; top: 12px; }
+            #hud { top: 15px; padding: 0 12px; }
+            .record-badge { font-size: 0.8rem; padding: 6px 14px; top: 155px; }
+            #mobile-controls { display: flex !important; bottom: 80px; }
+            .btn-mobile { width: 45px; height: 45px; font-size: 18px; }
+            .support-section { padding: 15px; margin-top: 15px; }
+            .support-title { font-size: 1.2rem; }
+            .phone-number { font-size: 0.9rem; padding: 10px 16px; }
         }
 
         @media (max-width: 400px) {
-            .btn {
-                width: 180px;
-                padding: 10px 16px;
-                font-size: 0.9rem;
-            }
-            h1 {
-                font-size: 1.6rem;
-            }
-            .hud-panel {
-                padding: 4px 8px;
-                font-size: 0.7rem;
-            }
-            #turn-indicator {
-                font-size: 0.8rem;
-            }
-            #height-counter {
-                font-size: 0.8rem;
-                padding: 4px 10px;
-            }
-            #tilt-indicator {
-                font-size: 0.8rem;
-                padding: 4px 10px;
-                top: 60px;
-            }
-            #difficulty-indicator {
-                font-size: 0.6rem;
-                padding: 3px 10px;
-                top: 100px;
-            }
-            .btn-mobile {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
-            }
-            #mobile-controls {
-                bottom: 65px;
-            }
+            .btn { width: 180px; padding: 10px 16px; font-size: 0.9rem; }
+            h1 { font-size: 1.6rem; }
+            .hud-panel { padding: 4px 8px; font-size: 0.7rem; }
+            #turn-indicator { font-size: 0.8rem; }
+            #height-counter { font-size: 0.8rem; padding: 4px 10px; }
+            #tilt-indicator { font-size: 0.8rem; padding: 4px 10px; top: 60px; }
+            #difficulty-indicator { font-size: 0.6rem; padding: 3px 10px; top: 100px; }
+            .btn-mobile { width: 40px; height: 40px; font-size: 16px; }
+            #mobile-controls { bottom: 65px; }
         }
     </style>
 </head>
@@ -704,13 +661,8 @@
     </div>
 
     <script>
-        // Проверка загрузки Matter.js
-        if (typeof Matter === 'undefined') {
-            console.error('Matter.js не загружен!');
-        } else {
-            initGame();
-        }
-
+        // ============ ГЛАВНАЯ ФУНКЦИЯ ИГРЫ ============
+        // Вызывается только после успешной загрузки Matter.js
         function initGame() {
             const { Engine, Render, Runner, Bodies, Composite, Body, Events } = Matter;
 
@@ -743,7 +695,6 @@
                 placed: '#4e5166'
             };
 
-            // ============ АВТОМАТИЧЕСКИЙ НАКЛОН ============
             let tiltAngle = 0;
             const MAX_TILT = 0.174;
             let autoTiltTimer = 0;
@@ -756,7 +707,6 @@
             let audioCtx = null;
             let touchStartPos = null;
             
-            // ============ АНИМАЦИЯ ПОЯВЛЕНИЯ БЛОКА ============
             let blockSpawnTime = 0;
             const BLOCK_SPAWN_DELAY = 200;
             let blockFadeInInterval = null;
@@ -771,7 +721,6 @@
                 return `rgba(${r}, ${g}, ${b}, ${alpha})`;
             }
 
-            // ============ РЕКОРДЫ ============
             function loadRecords() {
                 try {
                     const records = localStorage.getItem('towerRecords');
@@ -789,14 +738,11 @@
                 }
             }
 
-            // ============ СНЕЖИНКИ ============
             function createSnow() {
                 const container = document.getElementById('game-container');
                 removeSnow();
-                
                 const snowflakeCount = 40;
                 const snowSymbols = ['❄', '❅', '❆', '•', '∗'];
-                
                 for (let i = 0; i < snowflakeCount; i++) {
                     const snowflake = document.createElement('div');
                     snowflake.className = 'snowflake';
@@ -815,7 +761,6 @@
                 snowflakes.forEach(s => s.remove());
             }
 
-            // ============ ЗВУК ============
             function initAudio() {
                 if (!audioCtx) {
                     try {
@@ -845,44 +790,37 @@
                         osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.15);
                         gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
                         gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-                        osc.start(); 
-                        osc.stop(audioCtx.currentTime + 0.15);
+                        osc.start(); osc.stop(audioCtx.currentTime + 0.15);
                     } else if (type === 'fail') {
                         osc.type = 'sawtooth';
                         osc.frequency.setValueAtTime(180, audioCtx.currentTime);
                         osc.frequency.linearRampToValueAtTime(60, audioCtx.currentTime + 0.6);
                         gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
                         gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
-                        osc.start(); 
-                        osc.stop(audioCtx.currentTime + 0.6);
+                        osc.start(); osc.stop(audioCtx.currentTime + 0.6);
                     } else if (type === 'win') {
                         osc.frequency.setValueAtTime(400, audioCtx.currentTime);
                         osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.1);
                         osc.frequency.setValueAtTime(900, audioCtx.currentTime + 0.2);
                         gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
                         gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-                        osc.start(); 
-                        osc.stop(audioCtx.currentTime + 0.4);
+                        osc.start(); osc.stop(audioCtx.currentTime + 0.4);
                     } else if (type === 'tilt') {
                         osc.frequency.setValueAtTime(200, audioCtx.currentTime);
                         gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
                         gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                        osc.start(); 
-                        osc.stop(audioCtx.currentTime + 0.1);
+                        osc.start(); osc.stop(audioCtx.currentTime + 0.1);
                     }
                 } catch(e) {
-                    console.warn('Ошибка воспроизведения звука:', e);
+                    console.warn('Ошибка звука:', e);
                 }
             }
 
-            // ============ ФИЗИКА ============
             function initPhysics() {
                 const placeholder = document.getElementById('canvas-placeholder');
                 placeholder.innerHTML = '';
 
-                engine = Engine.create({ 
-                    gravity: { x: 0, y: 1.2 } 
-                });
+                engine = Engine.create({ gravity: { x: 0, y: 1.2 } });
                 
                 render = Render.create({
                     element: placeholder,
@@ -897,11 +835,7 @@
 
                 platform = Bodies.rectangle(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 40, 500, 50, {
                     isStatic: true,
-                    render: { 
-                        fillStyle: '#5a6578',
-                        strokeStyle: '#ffd700',
-                        lineWidth: 4
-                    },
+                    render: { fillStyle: '#5a6578', strokeStyle: '#ffd700', lineWidth: 4 },
                     friction: 0.9,
                     restitution: 0.1,
                     label: 'platform'
@@ -910,11 +844,9 @@
                 
                 Render.run(render);
                 runner = Runner.run(engine);
-
                 Events.on(engine, 'afterUpdate', checkTowerStability);
             }
 
-            // ============ АВТОМАТИЧЕСКОЕ ОБНОВЛЕНИЕ НАКЛОНА ============
             function updateTilt() {
                 if (!gameActive || !platform) return;
 
@@ -950,7 +882,6 @@
                 }
             }
 
-            // ============ ОБНОВЛЕНИЕ СЛОЖНОСТИ ============
             function updateDifficulty() {
                 const level = Math.floor(blockCount / 5) + 1;
                 const el = document.getElementById('difficulty-level');
@@ -971,7 +902,6 @@
                 }
             }
 
-            // ============ ЗАПУСК ИГРЫ ============
             window.startGame = function(mode) {
                 initAudio();
                 gameMode = mode;
@@ -990,7 +920,6 @@
                 resetRoundState();
             };
 
-            // ============ СБРОС РАУНДА ============
             function resetRoundState() {
                 if (blockFadeInInterval) {
                     clearInterval(blockFadeInInterval);
@@ -1038,7 +967,6 @@
                 spawnBlock();
             }
 
-            // ============ СОЗДАНИЕ БЛОКА ============
             function spawnBlock() {
                 if (!gameActive) return;
                 isBlockPlaced = false;
@@ -1092,11 +1020,8 @@
                 }
             }
 
-            // ============ АНИМАЦИЯ ПОЯВЛЕНИЯ ============
             function startBlockFadeInAnimation() {
-                if (blockFadeInInterval) {
-                    clearInterval(blockFadeInInterval);
-                }
+                if (blockFadeInInterval) clearInterval(blockFadeInInterval);
                 
                 let opacity = 0;
                 let scale = 0.8;
@@ -1141,7 +1066,6 @@
                 }, 25);
             }
 
-            // ============ УПРАВЛЕНИЕ ============
             window.addEventListener('keydown', (e) => {
                 keys[e.code] = true;
                 if (['Space'].includes(e.code)) {
@@ -1234,7 +1158,6 @@
                 dropBlock();
             });
 
-            // ============ СБРОС БЛОКА ============
             function dropBlock() {
                 if (isBlockPlaced || !currentBlock) return;
                 
@@ -1284,7 +1207,6 @@
                 }, 1000);
             }
 
-            // ============ БЕЙДЖ РЕКОРДА ============
             function showRecordBadge(height) {
                 const existingBadge = document.querySelector('.record-badge');
                 if (existingBadge) existingBadge.remove();
@@ -1299,7 +1221,6 @@
                 }, 3000);
             }
 
-            // ============ ХОД КОМПЬЮТЕРА ============
             function makeAIMove() {
                 if (!gameActive || !currentBlock) return;
 
@@ -1333,7 +1254,6 @@
                 }, 40);
             }
 
-            // ============ ПРОВЕРКА СТАБИЛЬНОСТИ ============
             function checkTowerStability() {
                 if (!gameActive) return;
                 
@@ -1377,7 +1297,6 @@
                 }
             }
 
-            // ============ ОБНОВЛЕНИЕ HUD ============
             function updateHUD() {
                 const turnInd = document.getElementById('turn-indicator');
                 if (currentPlayer === 1) {
@@ -1391,7 +1310,6 @@
                 document.getElementById('score-p2').innerText = scores.p2;
             }
 
-            // ============ ЭКРАН ОКОНЧАНИЯ ============
             function showGameOverScreen(winner) {
                 document.getElementById('hud-favicon').style.display = 'none';
                 const screen = document.getElementById('gameover-screen');
@@ -1416,7 +1334,6 @@
                 }
             }
 
-            // ============ ПЕРЕЗАПУСК И ВЫХОД ============
             window.restartRound = function() {
                 const screen = document.getElementById('gameover-screen');
                 screen.classList.add('hidden');
@@ -1436,18 +1353,9 @@
                 document.getElementById('menu-screen').classList.remove('hidden');
                 removeSnow();
                 
-                if (runner) {
-                    Runner.stop(runner);
-                    runner = null;
-                }
-                if (engine) {
-                    Engine.clear(engine);
-                    engine = null;
-                }
-                if (render) {
-                    Render.stop(render);
-                    render = null;
-                }
+                if (runner) { Runner.stop(runner); runner = null; }
+                if (engine) { Engine.clear(engine); engine = null; }
+                if (render) { Render.stop(render); render = null; }
                 
                 const placeholder = document.getElementById('canvas-placeholder');
                 placeholder.innerHTML = '';
@@ -1456,7 +1364,6 @@
                 if (recordBadge) recordBadge.remove();
             };
 
-            // ============ КОПИРОВАНИЕ ТЕЛЕФОНА ============
             window.copyPhone = function() {
                 const phoneNumber = '8-920-227-56-76';
                 
@@ -1528,7 +1435,6 @@
             `;
             document.head.appendChild(styleSheet);
 
-            // ============ ИГРОВОЙ ЦИКЛ ============
             function gameLoop(timestamp) {
                 if (gameActive) {
                     if (timestamp - lastTime > 16) {
