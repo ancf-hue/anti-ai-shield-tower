@@ -5,7 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Башня из кубиков — Физическая Игра</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    
+    <!-- Matter.js с тройным fallback на разные CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+    <script>
+        if (typeof Matter === 'undefined') {
+            document.write('<script src="https://unpkg.com/matter-js@0.19.0/build/matter.min.js"><\/script>');
+        }
+    </script>
+    <script>
+        if (typeof Matter === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"><\/script>');
+        }
+    </script>
+    <script>
+        if (typeof Matter === 'undefined') {
+            document.addEventListener('DOMContentLoaded', function() {
+                document.body.innerHTML = '<div style="color:white;padding:40px;text-align:center;font-family:sans-serif;background:#1a1a2e;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;">' +
+                    '<h1 style="font-size:2rem;margin-bottom:20px;">⚠️ Ошибка загрузки</h1>' +
+                    '<p style="margin-bottom:15px;">Не удалось загрузить физический движок Matter.js.</p>' +
+                    '<p style="margin-bottom:20px;">Проверьте подключение к интернету и обновите страницу.</p>' +
+                    '<button onclick="location.reload()" style="padding:12px 30px;background:#e94560;color:white;border:none;border-radius:25px;font-size:1rem;cursor:pointer;">🔄 Обновить</button>' +
+                    '</div>';
+            });
+        }
+    </script>
+    
     <style>
         :root {
             --bg-color: #1a1a2e;
@@ -102,15 +127,6 @@
         @keyframes faviconPulse {
             from { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.4)); transform: scale(1); }
             to { filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.9)); transform: scale(1.05); }
-        }
-
-        .logo-img {
-            width: 200px;
-            height: 200px;
-            object-fit: contain;
-            margin-bottom: 20px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(233, 69, 96, 0.4);
         }
 
         h1 {
@@ -463,7 +479,6 @@
             to { transform: translateX(-50%) scale(1.05); }
         }
 
-        /* Мобильные элементы управления */
         #mobile-controls {
             position: absolute;
             bottom: 100px;
@@ -623,10 +638,8 @@
 <body>
 
     <div id="game-container">
-        <!-- Favicon во время игры -->
         <img src="favicon.ico" alt="" id="hud-favicon" style="display:none">
 
-        <!-- HUD -->
         <div id="hud">
             <div class="hud-panel" id="turn-indicator">Ход: Игрок 1</div>
             <div class="hud-panel" id="score-board">
@@ -635,29 +648,20 @@
             </div>
         </div>
 
-        <!-- Индикатор наклона -->
         <div id="tilt-indicator">📐 Наклон: 0°</div>
-
-        <!-- Индикатор сложности -->
         <div id="difficulty-indicator">⚡ Сложность: <span id="difficulty-level">1</span></div>
-
-        <!-- Счетчик высоты -->
         <div class="hud-panel" id="height-counter">🧱 Высота: <span id="current-height">0</span></div>
 
-        <!-- Подсказка -->
         <div class="controls-hint">
             👆 Тап чтобы поставить блок | R — сброс
         </div>
 
-        <!-- Мобильные кнопки управления -->
         <div id="mobile-controls">
             <button class="btn-mobile" id="btn-reset" title="Сбросить наклон">⟳</button>
         </div>
 
-        <!-- Меню -->
         <div id="menu-screen" class="screen">
-            <img src="favicon.ico" alt="Favicon" class="favicon-top" onerror="this.style.display='none'">
-            <img src="logo.png" alt="Logo" class="logo-img" onerror="this.style.display='none'">
+            <img src="favicon.ico" alt="Favicon" class="favicon-top">
             <h1>БАШНЯ</h1>
             <p class="description">
                 Стройте самую высокую башню, аккуратно складывая кубики друг на друга.<br>
@@ -688,10 +692,8 @@
             </div>
         </div>
 
-        <!-- Экран окончания игры -->
         <div id="gameover-screen" class="screen hidden">
-            <img src="favicon.ico" alt="Favicon" class="favicon-top" onerror="this.style.display='none'">
-            <img src="logo.png" alt="Logo" class="logo-img" onerror="this.style.display='none'">
+            <img src="favicon.ico" alt="Favicon" class="favicon-top">
             <h1 id="gameover-title">💥 БАШНЯ РУХНУЛА!</h1>
             <p class="description" id="gameover-msg">Игрок проиграл этот раунд.</p>
             <button class="btn" onclick="restartRound()"><span>🔄 Играть еще раз</span></button>
@@ -702,877 +704,852 @@
     </div>
 
     <script>
-        const { Engine, Render, Runner, Bodies, Composite, Body, Events } = Matter;
-
-        // ============ ПЕРЕМЕННЫЕ ============
-        let engine, render, runner;
-        let blocks = [];
-        let currentBlock = null;
-        let platform;
-        
-        let gameMode = 'pvp';
-        let currentPlayer = 1;
-        let scores = { p1: 0, p2: 0 };
-        let isBlockPlaced = false;
-        let gameActive = false;
-        let maxBlockCount = 0;
-        let blockCount = 0;
-        
-        const BLOCK_WIDTH = 160;
-        const BLOCK_HEIGHT = 80;
-        const CANVAS_WIDTH = 800;
-        const CANVAS_HEIGHT = 900;
-        let spawnY = 200;
-
-        const COLORS = {
-            bg: '#1a1a2e',
-            ground: '#4a5568',
-            p1: '#e94560',
-            p2: '#0f3460',
-            ai: '#00f5d4',
-            placed: '#4e5166'
-        };
-
-        // ============ АВТОМАТИЧЕСКИЙ НАКЛОН ============
-        let tiltAngle = 0;
-        const MAX_TILT = 0.174; // 10 градусов
-        let autoTiltTimer = 0;
-        let tiltAmplitude = 0.025;
-        let tiltFrequency = 0.018;
-        
-        const keys = {};
-        let lastTime = 0;
-        let lastStabilityCheck = 0;
-        let audioCtx = null;
-        let touchStartPos = null;
-        
-        // ============ АНИМАЦИЯ ПОЯВЛЕНИЯ БЛОКА ============
-        let blockSpawnTime = 0;
-        const BLOCK_SPAWN_DELAY = 200; // Задержка перед обработкой перемещений (мс)
-        let blockFadeInInterval = null; // Интервал анимации появления
-        let currentBlockBaseColor = null; // Базовый цвет текущего блока
-
-        // ============ УТИЛИТЫ ============
-        // Конвертация HEX в RGBA
-        function hexToRgba(hex, alpha) {
-            hex = hex.replace('#', '');
-            const r = parseInt(hex.slice(0, 2), 16);
-            const g = parseInt(hex.slice(2, 4), 16);
-            const b = parseInt(hex.slice(4, 6), 16);
-            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        // Проверка загрузки Matter.js
+        if (typeof Matter === 'undefined') {
+            console.error('Matter.js не загружен!');
+        } else {
+            initGame();
         }
 
-        // ============ РЕКОРДЫ ============
-        function loadRecords() {
-            try {
-                const records = localStorage.getItem('towerRecords');
-                return records ? JSON.parse(records) : { p1: 0, p2: 0, ai: 0 };
-            } catch (e) {
-                return { p1: 0, p2: 0, ai: 0 };
-            }
-        }
+        function initGame() {
+            const { Engine, Render, Runner, Bodies, Composite, Body, Events } = Matter;
 
-        function saveRecords(records) {
-            try {
-                localStorage.setItem('towerRecords', JSON.stringify(records));
-            } catch (e) {
-                console.warn('Не удалось сохранить рекорды');
-            }
-        }
-
-        // ============ СНЕЖИНКИ ============
-        function createSnow() {
-            const container = document.getElementById('game-container');
-            removeSnow();
+            // ============ ПЕРЕМЕННЫЕ ============
+            let engine, render, runner;
+            let blocks = [];
+            let currentBlock = null;
+            let platform;
             
-            const snowflakeCount = 40;
-            const snowSymbols = ['❄', '❅', '❆', '•', '∗'];
+            let gameMode = 'pvp';
+            let currentPlayer = 1;
+            let scores = { p1: 0, p2: 0 };
+            let isBlockPlaced = false;
+            let gameActive = false;
+            let maxBlockCount = 0;
+            let blockCount = 0;
             
-            for (let i = 0; i < snowflakeCount; i++) {
-                const snowflake = document.createElement('div');
-                snowflake.className = 'snowflake';
-                snowflake.innerHTML = snowSymbols[Math.floor(Math.random() * snowSymbols.length)];
-                snowflake.style.left = Math.random() * 100 + '%';
-                snowflake.style.animationDuration = (Math.random() * 4 + 4) + 's';
-                snowflake.style.opacity = Math.random() * 0.6 + 0.4;
-                snowflake.style.fontSize = (Math.random() * 14 + 10) + 'px';
-                snowflake.style.animationDelay = Math.random() * 5 + 's';
-                container.appendChild(snowflake);
-            }
-        }
+            const BLOCK_WIDTH = 160;
+            const BLOCK_HEIGHT = 80;
+            const CANVAS_WIDTH = 800;
+            const CANVAS_HEIGHT = 900;
+            let spawnY = 200;
 
-        function removeSnow() {
-            const snowflakes = document.querySelectorAll('.snowflake');
-            snowflakes.forEach(s => s.remove());
-        }
+            const COLORS = {
+                bg: '#1a1a2e',
+                ground: '#4a5568',
+                p1: '#e94560',
+                p2: '#0f3460',
+                ai: '#00f5d4',
+                placed: '#4e5166'
+            };
 
-        // ============ ЗВУК ============
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-        
-        function playSound(type) {
-            try {
-                if (!audioCtx) return;
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                if (type === 'drop') {
-                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.15);
-                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-                    osc.start(); 
-                    osc.stop(audioCtx.currentTime + 0.15);
-                } else if (type === 'fail') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(180, audioCtx.currentTime);
-                    osc.frequency.linearRampToValueAtTime(60, audioCtx.currentTime + 0.6);
-                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
-                    osc.start(); 
-                    osc.stop(audioCtx.currentTime + 0.6);
-                } else if (type === 'win') {
-                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                    osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.1);
-                    osc.frequency.setValueAtTime(900, audioCtx.currentTime + 0.2);
-                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-                    osc.start(); 
-                    osc.stop(audioCtx.currentTime + 0.4);
-                } else if (type === 'tilt') {
-                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                    osc.start(); 
-                    osc.stop(audioCtx.currentTime + 0.1);
-                }
-            } catch(e) {
-                console.warn('Ошибка воспроизведения звука:', e);
-            }
-        }
-
-        // ============ ФИЗИКА ============
-        function initPhysics() {
-            const placeholder = document.getElementById('canvas-placeholder');
-            placeholder.innerHTML = '';
-
-            engine = Engine.create({ 
-                gravity: { x: 0, y: 1.2 } 
-            });
+            // ============ АВТОМАТИЧЕСКИЙ НАКЛОН ============
+            let tiltAngle = 0;
+            const MAX_TILT = 0.174;
+            let autoTiltTimer = 0;
+            let tiltAmplitude = 0.025;
+            let tiltFrequency = 0.018;
             
-            render = Render.create({
-                element: placeholder,
-                engine: engine,
-                options: {
-                    width: CANVAS_WIDTH,
-                    height: CANVAS_HEIGHT,
-                    wireframes: false,
-                    background: 'transparent'
-                }
-            });
-
-            platform = Bodies.rectangle(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 40, 500, 50, {
-                isStatic: true,
-                render: { 
-                    fillStyle: '#5a6578',
-                    strokeStyle: '#ffd700',
-                    lineWidth: 4
-                },
-                friction: 0.9,
-                restitution: 0.1,
-                label: 'platform'
-            });
-            Composite.add(engine.world, platform);
+            const keys = {};
+            let lastTime = 0;
+            let lastStabilityCheck = 0;
+            let audioCtx = null;
+            let touchStartPos = null;
             
-            Render.run(render);
-            runner = Runner.run(engine);
+            // ============ АНИМАЦИЯ ПОЯВЛЕНИЯ БЛОКА ============
+            let blockSpawnTime = 0;
+            const BLOCK_SPAWN_DELAY = 200;
+            let blockFadeInInterval = null;
+            let currentBlockBaseColor = null;
 
-            Events.on(engine, 'afterUpdate', checkTowerStability);
-        }
+            // ============ УТИЛИТЫ ============
+            function hexToRgba(hex, alpha) {
+                hex = hex.replace('#', '');
+                const r = parseInt(hex.slice(0, 2), 16);
+                const g = parseInt(hex.slice(2, 4), 16);
+                const b = parseInt(hex.slice(4, 6), 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
 
-        // ============ АВТОМАТИЧЕСКОЕ ОБНОВЛЕНИЕ НАКЛОНА ============
-        function updateTilt() {
-            if (!gameActive || !platform) return;
-
-            // Динамическая сложность в зависимости от высоты башни
-            const heightFactor = Math.min(blockCount / 15, 1.5);
-            const currentAmplitude = tiltAmplitude + heightFactor * 0.05;
-            const currentFrequency = tiltFrequency + heightFactor * 0.012;
-            
-            // Автоматический наклон по синусоиде
-            autoTiltTimer += currentFrequency;
-            tiltAngle = Math.sin(autoTiltTimer) * Math.min(currentAmplitude, MAX_TILT);
-            tiltAngle = Math.max(-MAX_TILT, Math.min(MAX_TILT, tiltAngle));
-
-            // Применяем наклон
-            if (Math.abs(tiltAngle) > 0.001) {
-                Body.setAngle(platform, tiltAngle);
-                
-                const degrees = Math.round(tiltAngle * 180 / Math.PI);
-                const indicator = document.getElementById('tilt-indicator');
-                indicator.innerText = `📐 Наклон: ${degrees}°`;
-                
-                // Визуальная обратная связь
-                const tiltIntensity = Math.abs(degrees) / 10;
-                if (tiltIntensity > 0.6) {
-                    indicator.style.borderColor = '#ff6b6b';
-                    indicator.style.backgroundColor = `rgba(255, 107, 107, ${0.2 + tiltIntensity * 0.3})`;
-                    indicator.classList.add('critical');
-                } else if (tiltIntensity > 0.3) {
-                    indicator.style.borderColor = '#ffd700';
-                    indicator.style.backgroundColor = 'rgba(255, 215, 0, 0.3)';
-                    indicator.classList.remove('critical');
-                } else {
-                    indicator.style.borderColor = '#ffd700';
-                    indicator.style.backgroundColor = 'rgba(255, 215, 0, 0.2)';
-                    indicator.classList.remove('critical');
+            // ============ РЕКОРДЫ ============
+            function loadRecords() {
+                try {
+                    const records = localStorage.getItem('towerRecords');
+                    return records ? JSON.parse(records) : { p1: 0, p2: 0, ai: 0 };
+                } catch (e) {
+                    return { p1: 0, p2: 0, ai: 0 };
                 }
             }
-        }
 
-        // ============ ОБНОВЛЕНИЕ СЛОЖНОСТИ ============
-        function updateDifficulty() {
-            const level = Math.floor(blockCount / 5) + 1;
-            const el = document.getElementById('difficulty-level');
-            if (el) el.innerText = level;
-            
-            const indicator = document.getElementById('difficulty-indicator');
-            if (indicator) {
-                indicator.className = '';
-                if (level > 7) {
-                    indicator.classList.add('extreme');
-                    indicator.innerText = '🔥 Сложность: ' + level;
-                } else if (level > 4) {
-                    indicator.classList.add('hard');
-                    indicator.innerText = '⚡ Сложность: ' + level;
-                } else {
-                    indicator.innerText = '💪 Сложность: ' + level;
+            function saveRecords(records) {
+                try {
+                    localStorage.setItem('towerRecords', JSON.stringify(records));
+                } catch (e) {
+                    console.warn('Не удалось сохранить рекорды');
                 }
             }
-        }
 
-        // ============ ЗАПУСК ИГРЫ ============
-        function startGame(mode) {
-            initAudio();
-            gameMode = mode;
-            scores = { p1: 0, p2: 0 };
-            document.getElementById('score-p1').innerText = '0';
-            document.getElementById('score-p2').innerText = '0';
-            
-            const p2Label = mode === 'ai' ? '🤖' : '🔴';
-            const p2Color = mode === 'ai' ? '#00f5d4' : '#0f3460';
-            document.getElementById('p2-score-box').innerHTML = `${p2Label} <span id="score-p2" class="score-val" style="color:${p2Color};">0</span>`;
-            
-            document.getElementById('menu-screen').classList.add('hidden');
-            document.getElementById('hud-favicon').style.display = 'block';
-            createSnow();
-            initPhysics();
-            resetRoundState();
-        }
-
-        // ============ СБРОС РАУНДА ============
-        function resetRoundState() {
-            // Останавливаем предыдущую анимацию если есть
-            if (blockFadeInInterval) {
-                clearInterval(blockFadeInInterval);
-                blockFadeInInterval = null;
-            }
-            
-            // Удаляем старые блоки
-            blocks.forEach(b => {
-                if (b && b.id) Composite.remove(engine.world, b);
-            });
-            blocks = [];
-            
-            if (currentBlock) {
-                Composite.remove(engine.world, currentBlock);
-                currentBlock = null;
-            }
-            
-            // Сброс наклона
-            tiltAngle = 0;
-            autoTiltTimer = 0;
-            tiltAmplitude = 0.025;
-            tiltFrequency = 0.018;
-            
-            if (platform) {
-                Body.setAngle(platform, 0);
-                platform.render.strokeStyle = '#ffd700';
-            }
-            
-            const indicator = document.getElementById('tilt-indicator');
-            indicator.innerText = '📐 Наклон: 0°';
-            indicator.style.borderColor = '#ffd700';
-            indicator.style.backgroundColor = 'rgba(255, 215, 0, 0.2)';
-            indicator.classList.remove('critical');
-            
-            blockCount = 0;
-            maxBlockCount = 0;
-            document.getElementById('current-height').innerText = '0';
-            
-            // Удаление бейджа рекорда
-            const recordBadge = document.querySelector('.record-badge');
-            if (recordBadge) recordBadge.remove();
-            
-            currentPlayer = 1;
-            gameActive = true;
-            isBlockPlaced = false;
-            updateHUD();
-            updateDifficulty();
-            spawnBlock();
-        }
-
-        // ============ СОЗДАНИЕ БЛОКА С ПЛАВНОЙ АНИМАЦИЕЙ ============
-        function spawnBlock() {
-            if (!gameActive) return;
-            isBlockPlaced = false;
-            updateHUD();
-
-            let highestY = CANVAS_HEIGHT - 60;
-            blocks.forEach(b => { 
-                if (b.position.y < highestY) highestY = b.position.y; 
-            });
-            
-            // Ограничение максимальной высоты
-            spawnY = Math.max(150, highestY - 150);
-            if (spawnY < 100) {
-                gameActive = false;
-                playSound('win');
-                showGameOverScreen(currentPlayer);
-                return;
-            }
-
-            let baseColor;
-            if (currentPlayer === 1) {
-                baseColor = COLORS.p1;
-            } else {
-                baseColor = gameMode === 'ai' ? COLORS.ai : COLORS.p2;
-            }
-            
-            // Сохраняем базовый цвет для анимации
-            currentBlockBaseColor = baseColor;
-
-            // Создаём блок с начальной прозрачностью
-            currentBlock = Bodies.rectangle(CANVAS_WIDTH / 2, spawnY, BLOCK_WIDTH, BLOCK_HEIGHT, {
-                isStatic: true,
-                friction: 0.8,
-                restitution: 0.05,
-                render: { 
-                    fillStyle: hexToRgba(baseColor, 0), // Начинаем полностью прозрачным
-                    strokeStyle: 'rgba(255, 255, 255, 0)', // Обводка тоже прозрачная
-                    lineWidth: 3
-                },
-                player: currentPlayer,
-                label: 'block'
-            });
-            
-            Composite.add(engine.world, currentBlock);
-            
-            // Масштабируем блок до 80% от размера (для эффекта появления)
-            Body.scale(currentBlock, 0.8, 0.8);
-            
-            // Запоминаем время создания для защиты от дёргания
-            blockSpawnTime = Date.now();
-            
-            // Запускаем анимацию плавного появления
-            startBlockFadeInAnimation();
-
-            updateDifficulty();
-
-            if (gameMode === 'ai' && currentPlayer === 2) {
-                setTimeout(makeAIMove, 800);
-            }
-        }
-
-        // ============ АНИМАЦИЯ ПЛАВНОГО ПОЯВЛЕНИЯ ============
-        function startBlockFadeInAnimation() {
-            // Останавливаем предыдущую анимацию если есть
-            if (blockFadeInInterval) {
-                clearInterval(blockFadeInInterval);
-            }
-            
-            let opacity = 0;
-            let scale = 0.8;
-            const targetScale = 1.0;
-            const fadeStep = 0.06; // Скорость появления (больше = быстрее)
-            const scaleStep = (targetScale - scale) / (1 / fadeStep); // Синхронизация scale с opacity
-            
-            blockFadeInInterval = setInterval(() => {
-                if (!currentBlock || !gameActive) {
-                    clearInterval(blockFadeInInterval);
-                    blockFadeInInterval = null;
-                    return;
+            // ============ СНЕЖИНКИ ============
+            function createSnow() {
+                const container = document.getElementById('game-container');
+                removeSnow();
+                
+                const snowflakeCount = 40;
+                const snowSymbols = ['❄', '❅', '❆', '•', '∗'];
+                
+                for (let i = 0; i < snowflakeCount; i++) {
+                    const snowflake = document.createElement('div');
+                    snowflake.className = 'snowflake';
+                    snowflake.innerHTML = snowSymbols[Math.floor(Math.random() * snowSymbols.length)];
+                    snowflake.style.left = Math.random() * 100 + '%';
+                    snowflake.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                    snowflake.style.opacity = Math.random() * 0.6 + 0.4;
+                    snowflake.style.fontSize = (Math.random() * 14 + 10) + 'px';
+                    snowflake.style.animationDelay = Math.random() * 5 + 's';
+                    container.appendChild(snowflake);
                 }
-                
-                opacity += fadeStep;
-                scale += scaleStep;
-                
-                // Ограничиваем значения
-                if (opacity >= 1) {
-                    opacity = 1;
-                    scale = targetScale;
-                    clearInterval(blockFadeInInterval);
-                    blockFadeInInterval = null;
-                }
-                
-                // Обновляем прозрачность цвета
-                currentBlock.render.fillStyle = hexToRgba(currentBlockBaseColor, opacity);
-                currentBlock.render.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-                
-                // Обновляем масштаб
-                if (scale < targetScale) {
-                    // Рассчитываем текущий scale factor относительно предыдущего
-                    const currentScaleFactor = currentBlock.plugin?.currentScale || 0.8;
-                    const scaleFactor = scale / currentScaleFactor;
-                    Body.scale(currentBlock, scaleFactor, scaleFactor);
-                    
-                    // Сохраняем текущий масштаб для следующего шага
-                    if (!currentBlock.plugin) currentBlock.plugin = {};
-                    currentBlock.plugin.currentScale = scale;
-                } else {
-                    // Финальная коррекция до точного 1.0
-                    if (currentBlock.plugin?.currentScale) {
-                        const finalScale = targetScale / currentBlock.plugin.currentScale;
-                        Body.scale(currentBlock, finalScale, finalScale);
-                        delete currentBlock.plugin.currentScale;
+            }
+
+            function removeSnow() {
+                const snowflakes = document.querySelectorAll('.snowflake');
+                snowflakes.forEach(s => s.remove());
+            }
+
+            // ============ ЗВУК ============
+            function initAudio() {
+                if (!audioCtx) {
+                    try {
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    } catch (e) {
+                        console.warn('AudioContext недоступен');
+                        return;
                     }
                 }
-            }, 25); // Обновление каждые 25мс (~40 FPS для анимации)
-        }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            }
+            
+            function playSound(type) {
+                try {
+                    if (!audioCtx) return;
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                    
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
 
-        // ============ УПРАВЛЕНИЕ ============
-        // Клавиатура
-        window.addEventListener('keydown', (e) => {
-            keys[e.code] = true;
-            if (['Space'].includes(e.code)) {
+                    if (type === 'drop') {
+                        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.15);
+                        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                        osc.start(); 
+                        osc.stop(audioCtx.currentTime + 0.15);
+                    } else if (type === 'fail') {
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                        osc.frequency.linearRampToValueAtTime(60, audioCtx.currentTime + 0.6);
+                        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+                        osc.start(); 
+                        osc.stop(audioCtx.currentTime + 0.6);
+                    } else if (type === 'win') {
+                        osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                        osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.1);
+                        osc.frequency.setValueAtTime(900, audioCtx.currentTime + 0.2);
+                        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                        osc.start(); 
+                        osc.stop(audioCtx.currentTime + 0.4);
+                    } else if (type === 'tilt') {
+                        osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                        osc.start(); 
+                        osc.stop(audioCtx.currentTime + 0.1);
+                    }
+                } catch(e) {
+                    console.warn('Ошибка воспроизведения звука:', e);
+                }
+            }
+
+            // ============ ФИЗИКА ============
+            function initPhysics() {
+                const placeholder = document.getElementById('canvas-placeholder');
+                placeholder.innerHTML = '';
+
+                engine = Engine.create({ 
+                    gravity: { x: 0, y: 1.2 } 
+                });
+                
+                render = Render.create({
+                    element: placeholder,
+                    engine: engine,
+                    options: {
+                        width: CANVAS_WIDTH,
+                        height: CANVAS_HEIGHT,
+                        wireframes: false,
+                        background: 'transparent'
+                    }
+                });
+
+                platform = Bodies.rectangle(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 40, 500, 50, {
+                    isStatic: true,
+                    render: { 
+                        fillStyle: '#5a6578',
+                        strokeStyle: '#ffd700',
+                        lineWidth: 4
+                    },
+                    friction: 0.9,
+                    restitution: 0.1,
+                    label: 'platform'
+                });
+                Composite.add(engine.world, platform);
+                
+                Render.run(render);
+                runner = Runner.run(engine);
+
+                Events.on(engine, 'afterUpdate', checkTowerStability);
+            }
+
+            // ============ АВТОМАТИЧЕСКОЕ ОБНОВЛЕНИЕ НАКЛОНА ============
+            function updateTilt() {
+                if (!gameActive || !platform) return;
+
+                const heightFactor = Math.min(blockCount / 15, 1.5);
+                const currentAmplitude = tiltAmplitude + heightFactor * 0.05;
+                const currentFrequency = tiltFrequency + heightFactor * 0.012;
+                
+                autoTiltTimer += currentFrequency;
+                tiltAngle = Math.sin(autoTiltTimer) * Math.min(currentAmplitude, MAX_TILT);
+                tiltAngle = Math.max(-MAX_TILT, Math.min(MAX_TILT, tiltAngle));
+
+                if (Math.abs(tiltAngle) > 0.001) {
+                    Body.setAngle(platform, tiltAngle);
+                    
+                    const degrees = Math.round(tiltAngle * 180 / Math.PI);
+                    const indicator = document.getElementById('tilt-indicator');
+                    indicator.innerText = `📐 Наклон: ${degrees}°`;
+                    
+                    const tiltIntensity = Math.abs(degrees) / 10;
+                    if (tiltIntensity > 0.6) {
+                        indicator.style.borderColor = '#ff6b6b';
+                        indicator.style.backgroundColor = `rgba(255, 107, 107, ${0.2 + tiltIntensity * 0.3})`;
+                        indicator.classList.add('critical');
+                    } else if (tiltIntensity > 0.3) {
+                        indicator.style.borderColor = '#ffd700';
+                        indicator.style.backgroundColor = 'rgba(255, 215, 0, 0.3)';
+                        indicator.classList.remove('critical');
+                    } else {
+                        indicator.style.borderColor = '#ffd700';
+                        indicator.style.backgroundColor = 'rgba(255, 215, 0, 0.2)';
+                        indicator.classList.remove('critical');
+                    }
+                }
+            }
+
+            // ============ ОБНОВЛЕНИЕ СЛОЖНОСТИ ============
+            function updateDifficulty() {
+                const level = Math.floor(blockCount / 5) + 1;
+                const el = document.getElementById('difficulty-level');
+                if (el) el.innerText = level;
+                
+                const indicator = document.getElementById('difficulty-indicator');
+                if (indicator) {
+                    indicator.className = '';
+                    if (level > 7) {
+                        indicator.classList.add('extreme');
+                        indicator.innerText = '🔥 Сложность: ' + level;
+                    } else if (level > 4) {
+                        indicator.classList.add('hard');
+                        indicator.innerText = '⚡ Сложность: ' + level;
+                    } else {
+                        indicator.innerText = '💪 Сложность: ' + level;
+                    }
+                }
+            }
+
+            // ============ ЗАПУСК ИГРЫ ============
+            window.startGame = function(mode) {
+                initAudio();
+                gameMode = mode;
+                scores = { p1: 0, p2: 0 };
+                document.getElementById('score-p1').innerText = '0';
+                document.getElementById('score-p2').innerText = '0';
+                
+                const p2Label = mode === 'ai' ? '🤖' : '🔴';
+                const p2Color = mode === 'ai' ? '#00f5d4' : '#0f3460';
+                document.getElementById('p2-score-box').innerHTML = `${p2Label} <span id="score-p2" class="score-val" style="color:${p2Color};">0</span>`;
+                
+                document.getElementById('menu-screen').classList.add('hidden');
+                document.getElementById('hud-favicon').style.display = 'block';
+                createSnow();
+                initPhysics();
+                resetRoundState();
+            };
+
+            // ============ СБРОС РАУНДА ============
+            function resetRoundState() {
+                if (blockFadeInInterval) {
+                    clearInterval(blockFadeInInterval);
+                    blockFadeInInterval = null;
+                }
+                
+                blocks.forEach(b => {
+                    if (b && b.id) Composite.remove(engine.world, b);
+                });
+                blocks = [];
+                
+                if (currentBlock) {
+                    Composite.remove(engine.world, currentBlock);
+                    currentBlock = null;
+                }
+                
+                tiltAngle = 0;
+                autoTiltTimer = 0;
+                tiltAmplitude = 0.025;
+                tiltFrequency = 0.018;
+                
+                if (platform) {
+                    Body.setAngle(platform, 0);
+                    platform.render.strokeStyle = '#ffd700';
+                }
+                
+                const indicator = document.getElementById('tilt-indicator');
+                indicator.innerText = '📐 Наклон: 0°';
+                indicator.style.borderColor = '#ffd700';
+                indicator.style.backgroundColor = 'rgba(255, 215, 0, 0.2)';
+                indicator.classList.remove('critical');
+                
+                blockCount = 0;
+                maxBlockCount = 0;
+                document.getElementById('current-height').innerText = '0';
+                
+                const recordBadge = document.querySelector('.record-badge');
+                if (recordBadge) recordBadge.remove();
+                
+                currentPlayer = 1;
+                gameActive = true;
+                isBlockPlaced = false;
+                updateHUD();
+                updateDifficulty();
+                spawnBlock();
+            }
+
+            // ============ СОЗДАНИЕ БЛОКА ============
+            function spawnBlock() {
+                if (!gameActive) return;
+                isBlockPlaced = false;
+                updateHUD();
+
+                let highestY = CANVAS_HEIGHT - 60;
+                blocks.forEach(b => { 
+                    if (b.position.y < highestY) highestY = b.position.y; 
+                });
+                
+                spawnY = Math.max(150, highestY - 150);
+                if (spawnY < 100) {
+                    gameActive = false;
+                    playSound('win');
+                    showGameOverScreen(currentPlayer);
+                    return;
+                }
+
+                let baseColor;
+                if (currentPlayer === 1) {
+                    baseColor = COLORS.p1;
+                } else {
+                    baseColor = gameMode === 'ai' ? COLORS.ai : COLORS.p2;
+                }
+                
+                currentBlockBaseColor = baseColor;
+
+                currentBlock = Bodies.rectangle(CANVAS_WIDTH / 2, spawnY, BLOCK_WIDTH, BLOCK_HEIGHT, {
+                    isStatic: true,
+                    friction: 0.8,
+                    restitution: 0.05,
+                    render: { 
+                        fillStyle: hexToRgba(baseColor, 0),
+                        strokeStyle: 'rgba(255, 255, 255, 0)',
+                        lineWidth: 3
+                    },
+                    player: currentPlayer,
+                    label: 'block'
+                });
+                
+                Composite.add(engine.world, currentBlock);
+                Body.scale(currentBlock, 0.8, 0.8);
+                
+                blockSpawnTime = Date.now();
+                startBlockFadeInAnimation();
+
+                updateDifficulty();
+
+                if (gameMode === 'ai' && currentPlayer === 2) {
+                    setTimeout(makeAIMove, 800);
+                }
+            }
+
+            // ============ АНИМАЦИЯ ПОЯВЛЕНИЯ ============
+            function startBlockFadeInAnimation() {
+                if (blockFadeInInterval) {
+                    clearInterval(blockFadeInInterval);
+                }
+                
+                let opacity = 0;
+                let scale = 0.8;
+                const targetScale = 1.0;
+                const fadeStep = 0.06;
+                const scaleStep = (targetScale - scale) / (1 / fadeStep);
+                
+                blockFadeInInterval = setInterval(() => {
+                    if (!currentBlock || !gameActive) {
+                        clearInterval(blockFadeInInterval);
+                        blockFadeInInterval = null;
+                        return;
+                    }
+                    
+                    opacity += fadeStep;
+                    scale += scaleStep;
+                    
+                    if (opacity >= 1) {
+                        opacity = 1;
+                        scale = targetScale;
+                        clearInterval(blockFadeInInterval);
+                        blockFadeInInterval = null;
+                    }
+                    
+                    currentBlock.render.fillStyle = hexToRgba(currentBlockBaseColor, opacity);
+                    currentBlock.render.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                    
+                    if (scale < targetScale) {
+                        const currentScaleFactor = currentBlock.plugin?.currentScale || 0.8;
+                        const scaleFactor = scale / currentScaleFactor;
+                        Body.scale(currentBlock, scaleFactor, scaleFactor);
+                        
+                        if (!currentBlock.plugin) currentBlock.plugin = {};
+                        currentBlock.plugin.currentScale = scale;
+                    } else {
+                        if (currentBlock.plugin?.currentScale) {
+                            const finalScale = targetScale / currentBlock.plugin.currentScale;
+                            Body.scale(currentBlock, finalScale, finalScale);
+                            delete currentBlock.plugin.currentScale;
+                        }
+                    }
+                }, 25);
+            }
+
+            // ============ УПРАВЛЕНИЕ ============
+            window.addEventListener('keydown', (e) => {
+                keys[e.code] = true;
+                if (['Space'].includes(e.code)) {
+                    e.preventDefault();
+                    if (!gameActive || isBlockPlaced || !currentBlock) return;
+                    if (gameMode === 'ai' && currentPlayer === 2) return;
+                    dropBlock();
+                }
+                if (e.code === 'KeyR') {
+                    e.preventDefault();
+                    autoTiltTimer += 0.3;
+                    playSound('tilt');
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                keys[e.code] = false;
+            });
+
+            const btnReset = document.getElementById('btn-reset');
+            if (btnReset) {
+                btnReset.addEventListener('click', () => {
+                    autoTiltTimer += 0.3;
+                    playSound('tilt');
+                });
+            }
+
+            window.addEventListener('mousemove', (e) => {
+                if (!gameActive || isBlockPlaced || !currentBlock) return;
+                if (gameMode === 'ai' && currentPlayer === 2) return;
+                if (Date.now() - blockSpawnTime < BLOCK_SPAWN_DELAY) return;
+
+                const canvas = render?.canvas;
+                if (!canvas) return;
+                
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = CANVAS_WIDTH / rect.width;
+                
+                let mouseX = (e.clientX - rect.left) * scaleX;
+                mouseX = Math.max(BLOCK_WIDTH / 2 + 10, Math.min(CANVAS_WIDTH - BLOCK_WIDTH / 2 - 10, mouseX));
+                Body.setPosition(currentBlock, { x: mouseX, y: spawnY });
+            });
+
+            window.addEventListener('touchmove', (e) => {
                 e.preventDefault();
                 if (!gameActive || isBlockPlaced || !currentBlock) return;
                 if (gameMode === 'ai' && currentPlayer === 2) return;
+                if (Date.now() - blockSpawnTime < BLOCK_SPAWN_DELAY) return;
+
+                const canvas = render?.canvas;
+                if (!canvas) return;
+                
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = CANVAS_WIDTH / rect.width;
+                
+                const touch = e.touches[0];
+                let touchX = (touch.clientX - rect.left) * scaleX;
+                touchX = Math.max(BLOCK_WIDTH / 2 + 10, Math.min(CANVAS_WIDTH - BLOCK_WIDTH / 2 - 10, touchX));
+                Body.setPosition(currentBlock, { x: touchX, y: spawnY });
+            }, { passive: false });
+
+            window.addEventListener('touchstart', (e) => {
+                if (!gameActive || isBlockPlaced || !currentBlock) return;
+                if (gameMode === 'ai' && currentPlayer === 2) return;
+                
+                const touch = e.touches[0];
+                touchStartPos = { x: touch.clientX, y: touch.clientY };
+            }, { passive: true });
+
+            window.addEventListener('touchend', (e) => {
+                if (!gameActive || isBlockPlaced || !currentBlock) return;
+                if (gameMode === 'ai' && currentPlayer === 2) return;
+                
+                if (touchStartPos) {
+                    const touch = e.changedTouches[0];
+                    const dx = touch.clientX - touchStartPos.x;
+                    const dy = touch.clientY - touchStartPos.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 15) {
+                        dropBlock();
+                    }
+                    touchStartPos = null;
+                }
+            }, { passive: true });
+
+            window.addEventListener('click', () => {
+                if (!gameActive || isBlockPlaced || !currentBlock) return;
+                if (gameMode === 'ai' && currentPlayer === 2) return;
                 dropBlock();
-            }
-            if (e.code === 'KeyR') {
-                e.preventDefault();
-                autoTiltTimer += 0.3; // Сбрасываем фазу наклона
-                playSound('tilt');
-            }
-        });
-
-        window.addEventListener('keyup', (e) => {
-            keys[e.code] = false;
-        });
-
-        // Мобильная кнопка сброса
-        document.getElementById('btn-reset')?.addEventListener('click', () => {
-            autoTiltTimer += 0.3;
-            playSound('tilt');
-        });
-
-        // Мышь — с защитой от дёргания при появлении блока
-        window.addEventListener('mousemove', (e) => {
-            if (!gameActive || isBlockPlaced || !currentBlock) return;
-            if (gameMode === 'ai' && currentPlayer === 2) return;
-            
-            // Игнорируем перемещения сразу после создания блока (защита от дёргания)
-            if (Date.now() - blockSpawnTime < BLOCK_SPAWN_DELAY) return;
-
-            const canvas = render?.canvas;
-            if (!canvas) return;
-            
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = CANVAS_WIDTH / rect.width;
-            
-            let mouseX = (e.clientX - rect.left) * scaleX;
-            mouseX = Math.max(BLOCK_WIDTH / 2 + 10, Math.min(CANVAS_WIDTH - BLOCK_WIDTH / 2 - 10, mouseX));
-            Body.setPosition(currentBlock, { x: mouseX, y: spawnY });
-        });
-
-        // Touch — с защитой от дёргания при появлении блока
-        window.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            if (!gameActive || isBlockPlaced || !currentBlock) return;
-            if (gameMode === 'ai' && currentPlayer === 2) return;
-            
-            // Игнорируем перемещения сразу после создания блока
-            if (Date.now() - blockSpawnTime < BLOCK_SPAWN_DELAY) return;
-
-            const canvas = render?.canvas;
-            if (!canvas) return;
-            
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = CANVAS_WIDTH / rect.width;
-            
-            const touch = e.touches[0];
-            let touchX = (touch.clientX - rect.left) * scaleX;
-            touchX = Math.max(BLOCK_WIDTH / 2 + 10, Math.min(CANVAS_WIDTH - BLOCK_WIDTH / 2 - 10, touchX));
-            Body.setPosition(currentBlock, { x: touchX, y: spawnY });
-        }, { passive: false });
-
-        window.addEventListener('touchstart', (e) => {
-            if (!gameActive || isBlockPlaced || !currentBlock) return;
-            if (gameMode === 'ai' && currentPlayer === 2) return;
-            
-            const touch = e.touches[0];
-            touchStartPos = { x: touch.clientX, y: touch.clientY };
-        }, { passive: true });
-
-        window.addEventListener('touchend', (e) => {
-            if (!gameActive || isBlockPlaced || !currentBlock) return;
-            if (gameMode === 'ai' && currentPlayer === 2) return;
-            
-            if (touchStartPos) {
-                const touch = e.changedTouches[0];
-                const dx = touch.clientX - touchStartPos.x;
-                const dy = touch.clientY - touchStartPos.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < 15) {
-                    dropBlock();
-                }
-                touchStartPos = null;
-            }
-        }, { passive: true });
-
-        window.addEventListener('click', () => {
-            if (!gameActive || isBlockPlaced || !currentBlock) return;
-            if (gameMode === 'ai' && currentPlayer === 2) return;
-            dropBlock();
-        });
-
-        // ============ СБРОС БЛОКА ============
-        function dropBlock() {
-            if (isBlockPlaced || !currentBlock) return;
-            
-            // Останавливаем анимацию появления если она ещё идёт
-            if (blockFadeInInterval) {
-                clearInterval(blockFadeInInterval);
-                blockFadeInInterval = null;
-            }
-            
-            // Гарантируем что блок полностью видим перед дропом
-            if (currentBlockBaseColor) {
-                currentBlock.render.fillStyle = currentBlockBaseColor;
-                currentBlock.render.strokeStyle = '#ffffff';
-            }
-            // Возвращаем точный размер 1.0 если анимация не успела завершиться
-            if (currentBlock.plugin?.currentScale) {
-                const finalScale = 1.0 / currentBlock.plugin.currentScale;
-                Body.scale(currentBlock, finalScale, finalScale);
-                delete currentBlock.plugin.currentScale;
-            }
-            
-            isBlockPlaced = true;
-            Body.setStatic(currentBlock, false);
-            
-            blocks.push(currentBlock);
-            blockCount++;
-            
-            // Обновление счётчика высоты
-            if (blockCount > maxBlockCount) {
-                maxBlockCount = blockCount;
-                document.getElementById('current-height').innerText = maxBlockCount;
-                
-                // Проверка рекорда
-                const records = loadRecords();
-                const recordKey = gameMode === 'ai' ? 'ai' : `p${currentPlayer}`;
-                if (maxBlockCount > records[recordKey]) {
-                    records[recordKey] = maxBlockCount;
-                    saveRecords(records);
-                    showRecordBadge(maxBlockCount);
-                }
-            }
-            
-            currentBlock = null;
-            currentBlockBaseColor = null;
-            playSound('drop');
-
-            setTimeout(() => {
-                if (gameActive) {
-                    currentPlayer = currentPlayer === 1 ? 2 : 1;
-                    spawnBlock();
-                }
-            }, 1000);
-        }
-
-        // ============ БЕЙДЖ РЕКОРДА ============
-        function showRecordBadge(height) {
-            const existingBadge = document.querySelector('.record-badge');
-            if (existingBadge) existingBadge.remove();
-            
-            const badge = document.createElement('div');
-            badge.className = 'record-badge';
-            badge.innerText = `🏆 НОВЫЙ РЕКОРД: ${height}!`;
-            document.getElementById('game-container').appendChild(badge);
-            
-            setTimeout(() => {
-                if (badge.parentNode) badge.remove();
-            }, 3000);
-        }
-
-        // ============ ХОД КОМПЬЮТЕРА ============
-        function makeAIMove() {
-            if (!gameActive || !currentBlock) return;
-
-            let targetX = CANVAS_WIDTH / 2;
-            if (blocks.length > 0) {
-                const lastBlocks = blocks.slice(-4);
-                let sumX = 0;
-                lastBlocks.forEach(b => sumX += b.position.x);
-                targetX = sumX / lastBlocks.length;
-                targetX += (Math.random() - 0.5) * 40;
-            }
-
-            targetX = Math.max(BLOCK_WIDTH / 2 + 10, Math.min(CANVAS_WIDTH - BLOCK_WIDTH / 2 - 10, targetX));
-
-            let currentX = currentBlock.position.x;
-            const steps = 15;
-            let currentStep = 0;
-            
-            const aiAnim = setInterval(() => {
-                if (!gameActive || !currentBlock) { 
-                    clearInterval(aiAnim); 
-                    return; 
-                }
-                currentX += (targetX - currentX) / (steps - currentStep + 1);
-                Body.setPosition(currentBlock, { x: currentX, y: spawnY });
-                currentStep++;
-                if (currentStep >= steps) {
-                    clearInterval(aiAnim);
-                    dropBlock();
-                }
-            }, 40);
-        }
-
-        // ============ ПРОВЕРКА СТАБИЛЬНОСТИ ============
-        function checkTowerStability() {
-            if (!gameActive) return;
-            
-            const now = Date.now();
-            if (now - lastStabilityCheck < 200) return;
-            lastStabilityCheck = now;
-
-            let fallen = false;
-            
-            blocks.forEach(block => {
-                if (!block || !block.position) return;
-                
-                if (block.position.y > CANVAS_HEIGHT + 50 ||
-                    block.position.x < -50 ||
-                    block.position.x > CANVAS_WIDTH + 50) {
-                    fallen = true;
-                }
             });
 
-            if (fallen) {
-                gameActive = false;
-                playSound('fail');
+            // ============ СБРОС БЛОКА ============
+            function dropBlock() {
+                if (isBlockPlaced || !currentBlock) return;
                 
-                const loser = currentPlayer;
-                const winner = loser === 1 ? 2 : 1;
-                
-                if (winner === 1) scores.p1++;
-                else scores.p2++;
-                
-                showGameOverScreen(winner);
-                return;
-            }
-
-            // Визуальная обратная связь платформы
-            if (platform) {
-                const tiltIntensity = Math.abs(tiltAngle) / MAX_TILT;
-                if (tiltIntensity > 0.7) {
-                    platform.render.strokeStyle = '#ff6b6b';
-                } else {
-                    platform.render.strokeStyle = '#ffd700';
+                if (blockFadeInInterval) {
+                    clearInterval(blockFadeInInterval);
+                    blockFadeInInterval = null;
                 }
-            }
-        }
-
-        // ============ ОБНОВЛЕНИЕ HUD ============
-        function updateHUD() {
-            const turnInd = document.getElementById('turn-indicator');
-            if (currentPlayer === 1) {
-                turnInd.innerText = "🔴 Ход: Игрок 1";
-                turnInd.style.color = COLORS.p1;
-            } else {
-                turnInd.innerText = gameMode === 'ai' ? "🟢 Ход: Компьютер" : "🔵 Ход: Игрок 2";
-                turnInd.style.color = gameMode === 'ai' ? COLORS.ai : COLORS.p2;
-            }
-            document.getElementById('score-p1').innerText = scores.p1;
-            document.getElementById('score-p2').innerText = scores.p2;
-        }
-
-        // ============ ЭКРАН ОКОНЧАНИЯ ============
-        function showGameOverScreen(winner) {
-            document.getElementById('hud-favicon').style.display = 'none';
-            const screen = document.getElementById('gameover-screen');
-            screen.classList.remove('hidden');
-            const title = document.getElementById('gameover-title');
-            const msg = document.getElementById('gameover-msg');
-
-            if (gameMode === 'ai') {
-                if (winner === 1) {
-                    title.innerText = "🎉 ПОБЕДА!";
-                    msg.innerText = `Вы обыграли компьютер! 🏆 Высота: ${maxBlockCount} кубиков`;
-                    playSound('win');
-                } else {
-                    title.innerText = "🤖 КОМПЬЮТЕР ПОБЕДИЛ";
-                    msg.innerText = `ИИ оказался точнее. Высота: ${maxBlockCount} кубиков`;
+                
+                if (currentBlockBaseColor) {
+                    currentBlock.render.fillStyle = currentBlockBaseColor;
+                    currentBlock.render.strokeStyle = '#ffffff';
                 }
-            } else {
-                const winnerName = winner === 1 ? 'Игрок 1 (🔴)' : 'Игрок 2 (🔵)';
-                title.innerText = "💥 БАШНЯ РУХНУЛА!";
-                msg.innerText = `🏆 Победил ${winnerName}! Высота: ${maxBlockCount} кубиков`;
-                playSound('win');
-            }
-        }
+                if (currentBlock.plugin?.currentScale) {
+                    const finalScale = 1.0 / currentBlock.plugin.currentScale;
+                    Body.scale(currentBlock, finalScale, finalScale);
+                    delete currentBlock.plugin.currentScale;
+                }
+                
+                isBlockPlaced = true;
+                Body.setStatic(currentBlock, false);
+                
+                blocks.push(currentBlock);
+                blockCount++;
+                
+                if (blockCount > maxBlockCount) {
+                    maxBlockCount = blockCount;
+                    document.getElementById('current-height').innerText = maxBlockCount;
+                    
+                    const records = loadRecords();
+                    const recordKey = gameMode === 'ai' ? 'ai' : `p${currentPlayer}`;
+                    if (maxBlockCount > records[recordKey]) {
+                        records[recordKey] = maxBlockCount;
+                        saveRecords(records);
+                        showRecordBadge(maxBlockCount);
+                    }
+                }
+                
+                currentBlock = null;
+                currentBlockBaseColor = null;
+                playSound('drop');
 
-        // ============ ПЕРЕЗАПУСК И ВЫХОД ============
-        function restartRound() {
-            const screen = document.getElementById('gameover-screen');
-            screen.classList.add('hidden');
-            document.getElementById('hud-favicon').style.display = 'block';
-            resetRoundState();
-        }
+                setTimeout(() => {
+                    if (gameActive) {
+                        currentPlayer = currentPlayer === 1 ? 2 : 1;
+                        spawnBlock();
+                    }
+                }, 1000);
+            }
 
-        function backToMenu() {
-            // Останавливаем анимацию появления
-            if (blockFadeInInterval) {
-                clearInterval(blockFadeInInterval);
-                blockFadeInInterval = null;
+            // ============ БЕЙДЖ РЕКОРДА ============
+            function showRecordBadge(height) {
+                const existingBadge = document.querySelector('.record-badge');
+                if (existingBadge) existingBadge.remove();
+                
+                const badge = document.createElement('div');
+                badge.className = 'record-badge';
+                badge.innerText = `🏆 НОВЫЙ РЕКОРД: ${height}!`;
+                document.getElementById('game-container').appendChild(badge);
+                
+                setTimeout(() => {
+                    if (badge.parentNode) badge.remove();
+                }, 3000);
             }
-            
-            const screen = document.getElementById('gameover-screen');
-            screen.classList.add('hidden');
-            document.getElementById('hud-favicon').style.display = 'none';
-            document.getElementById('menu-screen').classList.remove('hidden');
-            removeSnow();
-            
-            if (runner) {
-                Runner.stop(runner);
-                runner = null;
-            }
-            if (engine) {
-                Engine.clear(engine);
-                engine = null;
-            }
-            if (render) {
-                Render.stop(render);
-                render = null;
-            }
-            
-            const placeholder = document.getElementById('canvas-placeholder');
-            placeholder.innerHTML = '';
-            
-            const recordBadge = document.querySelector('.record-badge');
-            if (recordBadge) recordBadge.remove();
-        }
 
-        // ============ КОПИРОВАНИЕ ТЕЛЕФОНА ============
-        function copyPhone() {
-            const phoneNumber = '8-920-227-56-76';
-            
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(phoneNumber).then(() => {
-                    showToast('✅ Номер скопирован: ' + phoneNumber);
-                }).catch(() => {
-                    fallbackCopy(phoneNumber);
+            // ============ ХОД КОМПЬЮТЕРА ============
+            function makeAIMove() {
+                if (!gameActive || !currentBlock) return;
+
+                let targetX = CANVAS_WIDTH / 2;
+                if (blocks.length > 0) {
+                    const lastBlocks = blocks.slice(-4);
+                    let sumX = 0;
+                    lastBlocks.forEach(b => sumX += b.position.x);
+                    targetX = sumX / lastBlocks.length;
+                    targetX += (Math.random() - 0.5) * 40;
+                }
+
+                targetX = Math.max(BLOCK_WIDTH / 2 + 10, Math.min(CANVAS_WIDTH - BLOCK_WIDTH / 2 - 10, targetX));
+
+                let currentX = currentBlock.position.x;
+                const steps = 15;
+                let currentStep = 0;
+                
+                const aiAnim = setInterval(() => {
+                    if (!gameActive || !currentBlock) { 
+                        clearInterval(aiAnim); 
+                        return; 
+                    }
+                    currentX += (targetX - currentX) / (steps - currentStep + 1);
+                    Body.setPosition(currentBlock, { x: currentX, y: spawnY });
+                    currentStep++;
+                    if (currentStep >= steps) {
+                        clearInterval(aiAnim);
+                        dropBlock();
+                    }
+                }, 40);
+            }
+
+            // ============ ПРОВЕРКА СТАБИЛЬНОСТИ ============
+            function checkTowerStability() {
+                if (!gameActive) return;
+                
+                const now = Date.now();
+                if (now - lastStabilityCheck < 200) return;
+                lastStabilityCheck = now;
+
+                let fallen = false;
+                
+                blocks.forEach(block => {
+                    if (!block || !block.position) return;
+                    
+                    if (block.position.y > CANVAS_HEIGHT + 50 ||
+                        block.position.x < -50 ||
+                        block.position.x > CANVAS_WIDTH + 50) {
+                        fallen = true;
+                    }
                 });
-            } else {
-                fallbackCopy(phoneNumber);
-            }
-        }
 
-        function fallbackCopy(text) {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-999999px';
-            document.body.appendChild(textArea);
-            textArea.select();
-            
-            try {
-                document.execCommand('copy');
-                showToast('✅ Номер скопирован: ' + text);
-            } catch (err) {
-                alert('Номер: ' + text);
-            }
-            
-            document.body.removeChild(textArea);
-        }
+                if (fallen) {
+                    gameActive = false;
+                    playSound('fail');
+                    
+                    const loser = currentPlayer;
+                    const winner = loser === 1 ? 2 : 1;
+                    
+                    if (winner === 1) scores.p1++;
+                    else scores.p2++;
+                    
+                    showGameOverScreen(winner);
+                    return;
+                }
 
-        // ============ TOAST УВЕДОМЛЕНИЕ ============
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 100px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(0,0,0,0.9);
-                color: white;
-                padding: 12px 24px;
-                border-radius: 12px;
-                z-index: 100;
-                font-size: 1rem;
-                border: 1px solid rgba(255,255,255,0.1);
-                backdrop-filter: blur(10px);
-                animation: fadeInOut 2s ease forwards;
-                pointer-events: none;
-                max-width: 90%;
-                text-align: center;
-            `;
-            toast.innerText = message;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                if (toast.parentNode) toast.remove();
-            }, 2000);
-        }
-
-        // Добавляем стили для toast
-        const styleSheet = document.createElement("style");
-        styleSheet.textContent = `
-            @keyframes fadeInOut {
-                0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
-                15% { opacity: 1; transform: translateX(-50%) translateY(0); }
-                85% { opacity: 1; transform: translateX(-50%) translateY(0); }
-                100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-            }
-        `;
-        document.head.appendChild(styleSheet);
-
-        // ============ ИГРОВОЙ ЦИКЛ ============
-        function gameLoop(timestamp) {
-            if (gameActive) {
-                if (timestamp - lastTime > 16) {
-                    updateTilt();
-                    lastTime = timestamp;
+                if (platform) {
+                    const tiltIntensity = Math.abs(tiltAngle) / MAX_TILT;
+                    if (tiltIntensity > 0.7) {
+                        platform.render.strokeStyle = '#ff6b6b';
+                    } else {
+                        platform.render.strokeStyle = '#ffd700';
+                    }
                 }
             }
-            requestAnimationFrame(gameLoop);
-        }
-        
-        requestAnimationFrame(gameLoop);
 
-        // ============ RESIZE ============
-        window.addEventListener('resize', () => {
-            if (render && render.canvas) {
-                const canvas = render.canvas;
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                canvas.style.objectFit = 'contain';
+            // ============ ОБНОВЛЕНИЕ HUD ============
+            function updateHUD() {
+                const turnInd = document.getElementById('turn-indicator');
+                if (currentPlayer === 1) {
+                    turnInd.innerText = "🔴 Ход: Игрок 1";
+                    turnInd.style.color = COLORS.p1;
+                } else {
+                    turnInd.innerText = gameMode === 'ai' ? "🟢 Ход: Компьютер" : "🔵 Ход: Игрок 2";
+                    turnInd.style.color = gameMode === 'ai' ? COLORS.ai : COLORS.p2;
+                }
+                document.getElementById('score-p1').innerText = scores.p1;
+                document.getElementById('score-p2').innerText = scores.p2;
             }
-        });
+
+            // ============ ЭКРАН ОКОНЧАНИЯ ============
+            function showGameOverScreen(winner) {
+                document.getElementById('hud-favicon').style.display = 'none';
+                const screen = document.getElementById('gameover-screen');
+                screen.classList.remove('hidden');
+                const title = document.getElementById('gameover-title');
+                const msg = document.getElementById('gameover-msg');
+
+                if (gameMode === 'ai') {
+                    if (winner === 1) {
+                        title.innerText = "🎉 ПОБЕДА!";
+                        msg.innerText = `Вы обыграли компьютер! 🏆 Высота: ${maxBlockCount} кубиков`;
+                        playSound('win');
+                    } else {
+                        title.innerText = "🤖 КОМПЬЮТЕР ПОБЕДИЛ";
+                        msg.innerText = `ИИ оказался точнее. Высота: ${maxBlockCount} кубиков`;
+                    }
+                } else {
+                    const winnerName = winner === 1 ? 'Игрок 1 (🔴)' : 'Игрок 2 (🔵)';
+                    title.innerText = "💥 БАШНЯ РУХНУЛА!";
+                    msg.innerText = `🏆 Победил ${winnerName}! Высота: ${maxBlockCount} кубиков`;
+                    playSound('win');
+                }
+            }
+
+            // ============ ПЕРЕЗАПУСК И ВЫХОД ============
+            window.restartRound = function() {
+                const screen = document.getElementById('gameover-screen');
+                screen.classList.add('hidden');
+                document.getElementById('hud-favicon').style.display = 'block';
+                resetRoundState();
+            };
+
+            window.backToMenu = function() {
+                if (blockFadeInInterval) {
+                    clearInterval(blockFadeInInterval);
+                    blockFadeInInterval = null;
+                }
+                
+                const screen = document.getElementById('gameover-screen');
+                screen.classList.add('hidden');
+                document.getElementById('hud-favicon').style.display = 'none';
+                document.getElementById('menu-screen').classList.remove('hidden');
+                removeSnow();
+                
+                if (runner) {
+                    Runner.stop(runner);
+                    runner = null;
+                }
+                if (engine) {
+                    Engine.clear(engine);
+                    engine = null;
+                }
+                if (render) {
+                    Render.stop(render);
+                    render = null;
+                }
+                
+                const placeholder = document.getElementById('canvas-placeholder');
+                placeholder.innerHTML = '';
+                
+                const recordBadge = document.querySelector('.record-badge');
+                if (recordBadge) recordBadge.remove();
+            };
+
+            // ============ КОПИРОВАНИЕ ТЕЛЕФОНА ============
+            window.copyPhone = function() {
+                const phoneNumber = '8-920-227-56-76';
+                
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(phoneNumber).then(() => {
+                        showToast('✅ Номер скопирован: ' + phoneNumber);
+                    }).catch(() => {
+                        fallbackCopy(phoneNumber);
+                    });
+                } else {
+                    fallbackCopy(phoneNumber);
+                }
+            };
+
+            function fallbackCopy(text) {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    showToast('✅ Номер скопирован: ' + text);
+                } catch (err) {
+                    alert('Номер: ' + text);
+                }
+                
+                document.body.removeChild(textArea);
+            }
+
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed;
+                    bottom: 100px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(0,0,0,0.9);
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 12px;
+                    z-index: 100;
+                    font-size: 1rem;
+                    border: 1px solid rgba(255,255,255,0.1);
+                    backdrop-filter: blur(10px);
+                    animation: fadeInOut 2s ease forwards;
+                    pointer-events: none;
+                    max-width: 90%;
+                    text-align: center;
+                `;
+                toast.innerText = message;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    if (toast.parentNode) toast.remove();
+                }, 2000);
+            }
+
+            const styleSheet = document.createElement("style");
+            styleSheet.textContent = `
+                @keyframes fadeInOut {
+                    0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                    15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                }
+            `;
+            document.head.appendChild(styleSheet);
+
+            // ============ ИГРОВОЙ ЦИКЛ ============
+            function gameLoop(timestamp) {
+                if (gameActive) {
+                    if (timestamp - lastTime > 16) {
+                        updateTilt();
+                        lastTime = timestamp;
+                    }
+                }
+                requestAnimationFrame(gameLoop);
+            }
+            
+            requestAnimationFrame(gameLoop);
+
+            window.addEventListener('resize', () => {
+                if (render && render.canvas) {
+                    const canvas = render.canvas;
+                    canvas.style.width = '100%';
+                    canvas.style.height = '100%';
+                    canvas.style.objectFit = 'contain';
+                }
+            });
+        }
     </script>
 </body>
 </html>
