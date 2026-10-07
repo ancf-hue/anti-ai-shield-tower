@@ -3,9 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- ============ SEO: КАНОНИЧЕСКИЙ URL ============ -->
+    <link rel="canonical" href="https://anti-ai-shield-tower-hax5.vercel.app/">
+
+    <!-- ============ SEO: ИНДЕКСАЦИЯ ============ -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow">
+
+    <!-- ============ SEO: ОПИСАНИЕ И КЛЮЧЕВЫЕ СЛОВА ============ -->
+    <meta name="description" content="Башня из кубиков — бесплатная физическая онлайн-игра. Стройте башню, складывая блоки друг на друга. Платформа автоматически наклоняется — кто уронит, тот проиграл. Играйте против компьютера или вдвоём.">
+    <meta name="keywords" content="башня из кубиков, физическая игра, онлайн игра, игра на двоих, игра против компьютера, бесплатная игра, tower game, stacking game">
+    <meta name="author" content="Anti-AI Shield">
+    <meta name="theme-color" content="#1a1a2e">
+
+    <!-- ============ SEO: OPEN GRAPH (соцсети) ============ -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://anti-ai-shield-tower-hax5.vercel.app/">
+    <meta property="og:title" content="Башня из кубиков — Физическая Игра">
+    <meta property="og:description" content="Стройте самую высокую башню, аккуратно складывая кубики. Платформа наклоняется автоматически! Кто уронит башню — проиграл.">
+    <meta property="og:image" content="https://anti-ai-shield-tower-hax5.vercel.app/favicon.ico">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:site_name" content="Башня из кубиков">
+
+    <!-- ============ SEO: TWITTER CARD ============ -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Башня из кубиков — Физическая Игра">
+    <meta name="twitter:description" content="Бесплатная физическая игра. Стройте башню, платформа наклоняется, кто уронит — проиграл.">
+    <meta name="twitter:image" content="https://anti-ai-shield-tower-hax5.vercel.app/favicon.ico">
+
+    <!-- ============ FAVICON ============ -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.ico">
+
     <title>Башня из кубиков — Физическая Игра</title>
-    
+
+    <!-- ============ SEO: JSON-LD СТРУКТУРИРОВАННЫЕ ДАННЫЕ ============ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "Башня из кубиков",
+      "url": "https://anti-ai-shield-tower-hax5.vercel.app/",
+      "description": "Бесплатная физическая онлайн-игра. Стройте башню из кубиков, платформа автоматически наклоняется. Играйте против компьютера или вдвоём.",
+      "genre": ["Puzzle", "Physics", "Casual"],
+      "gamePlatform": ["Web browser", "Mobile browser"],
+      "applicationCategory": "Game",
+      "operatingSystem": "Any",
+      "inLanguage": "ru",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "RUB"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "Anti-AI Shield",
+        "url": "https://ancf-hue.github.io/"
+      }
+    }
+    </script>
+
     <!-- Matter.js - загрузка с нескольких CDN -->
     <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
     <script>
@@ -18,7 +76,7 @@
             document.write('<scr'+'ipt src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></scr'+'ipt>');
         }
     </script>
-    
+
     <style>
         :root {
             --bg-color: #1a1a2e;
@@ -123,12 +181,65 @@
             text-shadow: 0 0 20px var(--accent-p1);
         }
 
+        h2 {
+            font-size: 1.3rem;
+            margin: 15px 0 8px;
+            color: var(--gold);
+        }
+
+        h3 {
+            font-size: 1.05rem;
+            margin: 12px 0 6px;
+            color: var(--accent-ai);
+        }
+
         .description {
             font-size: 1rem;
             max-width: 500px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             color: #ccc;
             line-height: 1.6;
+        }
+
+        /* ============ SEO-БЛОК: ТЕКСТОВЫЙ КОНТЕНТ ДЛЯ ИНДЕКСАЦИИ ============ */
+        .seo-content {
+            max-width: 560px;
+            margin: 20px auto 10px;
+            text-align: left;
+            color: #bbb;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 15px;
+            padding: 18px 22px;
+        }
+
+        .seo-content h2 {
+            font-size: 1.15rem;
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: var(--gold);
+            text-align: center;
+        }
+
+        .seo-content h3 {
+            font-size: 1rem;
+            margin: 14px 0 6px;
+            color: var(--accent-ai);
+        }
+
+        .seo-content p {
+            margin-bottom: 8px;
+        }
+
+        .seo-content ul {
+            margin: 6px 0 10px 20px;
+            padding: 0;
+        }
+
+        .seo-content li {
+            margin-bottom: 4px;
         }
 
         .btn {
@@ -504,6 +615,19 @@
             background: rgba(255, 107, 107, 0.4);
         }
 
+        /* ============ SEO: СКРЫТЫЙ H1 ДЛЯ ПОИСКОВИКОВ ============ */
+        .visually-hidden {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+
         @media (max-width: 600px) {
             .controls-hint { display: none; }
             .btn { width: 220px; padding: 12px 20px; font-size: 1rem; }
@@ -521,6 +645,9 @@
             .support-section { padding: 15px; margin-top: 15px; }
             .support-title { font-size: 1.2rem; }
             .phone-number { font-size: 0.9rem; padding: 10px 16px; }
+            .seo-content { padding: 14px 16px; font-size: 0.85rem; }
+            .seo-content h2 { font-size: 1rem; }
+            .seo-content h3 { font-size: 0.92rem; }
         }
 
         @media (max-width: 400px) {
@@ -533,6 +660,7 @@
             #difficulty-indicator { font-size: 0.6rem; padding: 3px 10px; top: 100px; }
             .btn-mobile { width: 40px; height: 40px; font-size: 16px; }
             #mobile-controls { bottom: 65px; }
+            .seo-content { padding: 12px 14px; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -562,8 +690,8 @@
         </div>
 
         <div id="menu-screen" class="screen">
-            <img src="favicon.ico" alt="Favicon" class="favicon-top">
-            <h1>БАШНЯ</h1>
+            <img src="favicon.ico" alt="Логотип игры Башня из кубиков" class="favicon-top">
+            <h1>БАШНЯ ИЗ КУБИКОВ</h1>
             <p class="description">
                 Стройте самую высокую башню, аккуратно складывая кубики друг на друга.<br>
                 <strong>Платформа наклоняется автоматически!</strong><br>
@@ -571,7 +699,41 @@
             </p>
             <button class="btn" onclick="startGame('ai')"><span>🤖 Игрок VS Компьютер</span></button>
             <button class="btn btn-secondary" onclick="startGame('pvp')"><span>👥 Игрок VS Игрок</span></button>
-            
+
+            <!-- ============ SEO-БЛОК: ТЕКСТОВЫЙ КОНТЕНТ ============ -->
+            <section class="seo-content">
+                <h2>Об игре «Башня из кубиков»</h2>
+                <p>
+                    «Башня из кубиков» — это бесплатная браузерная игра с реалистичной физикой.
+                    Ваша задача — складывать блоки друг на друга так, чтобы башня не упала.
+                    Чем выше конструкция, тем сильнее наклоняется платформа и тем сложнее
+                    удержать равновесие.
+                </p>
+
+                <h3>Как играть</h3>
+                <ul>
+                    <li>Тапните или кликните по экрану, чтобы поставить блок.</li>
+                    <li>Двигайте мышь или палец влево-вправо, чтобы выбрать позицию.</li>
+                    <li>Кнопка <strong>R</strong> или <strong>⟳</strong> — сбросить наклон платформы.</li>
+                    <li>Кто уронит башню — тот проиграл раунд.</li>
+                </ul>
+
+                <h3>Режимы игры</h3>
+                <ul>
+                    <li><strong>Игрок против компьютера</strong> — сразитесь с ИИ, который целится в центр башни.</li>
+                    <li><strong>Игрок против игрока</strong> — играйте вдвоём на одном устройстве по очереди.</li>
+                </ul>
+
+                <h3>Особенности</h3>
+                <ul>
+                    <li>Реалистичная физика на движке Matter.js.</li>
+                    <li>Автоматический наклон платформы — чем выше башня, тем сложнее.</li>
+                    <li>Система рекордов сохраняется в браузере.</li>
+                    <li>Работает на компьютере и мобильных устройствах.</li>
+                    <li>Не требует установки и регистрации.</li>
+                </ul>
+            </section>
+
             <div class="support-section">
                 <div class="support-title">🤝 ПОДДЕРЖАТЬ ПРОЕКТ 💙</div>
                 <div class="support-text">
@@ -587,14 +749,14 @@
                 <div class="support-text" style="margin-top: 10px; color: #00f5d4;">
                     ❤️ Спасибо за поддержку!
                 </div>
-                <a href="https://ancf-hue.github.io/" target="_blank" class="support-link">
+                <a href="https://ancf-hue.github.io/" target="_blank" rel="noopener" class="support-link">
                     🌟 👉 Каталог бесплатных офлайн-приложений Anti-AI Shield
                 </a>
             </div>
         </div>
 
         <div id="gameover-screen" class="screen hidden">
-            <img src="favicon.ico" alt="Favicon" class="favicon-top">
+            <img src="favicon.ico" alt="Логотип игры" class="favicon-top">
             <h1 id="gameover-title">💥 БАШНЯ РУХНУЛА!</h1>
             <p class="description" id="gameover-msg">Игрок проиграл этот раунд.</p>
             <button class="btn" onclick="restartRound()"><span>🔄 Играть еще раз</span></button>
@@ -627,7 +789,7 @@
             let blocks = [];
             let currentBlock = null;
             let platform;
-            
+
             let gameMode = 'pvp';
             let currentPlayer = 1;
             let scores = { p1: 0, p2: 0 };
@@ -635,7 +797,7 @@
             let gameActive = false;
             let maxBlockCount = 0;
             let blockCount = 0;
-            
+
             const BLOCK_WIDTH = 160;
             const BLOCK_HEIGHT = 80;
             const CANVAS_WIDTH = 800;
@@ -656,19 +818,19 @@
             let autoTiltTimer = 0;
             let tiltAmplitude = 0.025;
             let tiltFrequency = 0.018;
-            
+
             const keys = {};
             let lastTime = 0;
             let lastStabilityCheck = 0;
             let audioCtx = null;
             let touchStartPos = null;
-            
+
             let blockSpawnTime = 0;
             const BLOCK_SPAWN_DELAY = 200;
             let blockFadeInInterval = null;
-            let aiAnimInterval = null; // Отдельная переменная для интервала ИИ
+            let aiAnimInterval = null;
             let currentBlockBaseColor = null;
-            let lastTouchTime = 0; // Защита от двойного клика
+            let lastTouchTime = 0;
 
             // ============ УТИЛИТЫ ============
             function hexToRgba(hex, alpha) {
@@ -732,12 +894,12 @@
                     audioCtx.resume();
                 }
             }
-            
+
             function playSound(type) {
                 try {
                     if (!audioCtx) return;
                     if (audioCtx.state === 'suspended') audioCtx.resume();
-                    
+
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
                     osc.connect(gain);
@@ -780,7 +942,7 @@
                 placeholder.innerHTML = '';
 
                 engine = Engine.create({ gravity: { x: 0, y: 1.2 } });
-                
+
                 render = Render.create({
                     element: placeholder,
                     engine: engine,
@@ -800,7 +962,7 @@
                     label: 'platform'
                 });
                 Composite.add(engine.world, platform);
-                
+
                 Render.run(render);
                 runner = Runner.run(engine);
                 Events.on(engine, 'afterUpdate', checkTowerStability);
@@ -812,18 +974,18 @@
                 const heightFactor = Math.min(blockCount / 15, 1.5);
                 const currentAmplitude = tiltAmplitude + heightFactor * 0.05;
                 const currentFrequency = tiltFrequency + heightFactor * 0.012;
-                
+
                 autoTiltTimer += currentFrequency;
                 tiltAngle = Math.sin(autoTiltTimer) * Math.min(currentAmplitude, MAX_TILT);
                 tiltAngle = Math.max(-MAX_TILT, Math.min(MAX_TILT, tiltAngle));
 
                 if (Math.abs(tiltAngle) > 0.001) {
                     Body.setAngle(platform, tiltAngle);
-                    
+
                     const degrees = Math.round(tiltAngle * 180 / Math.PI);
                     const indicator = document.getElementById('tilt-indicator');
                     indicator.innerText = `📐 Наклон: ${degrees}°`;
-                    
+
                     const tiltIntensity = Math.abs(degrees) / 10;
                     if (tiltIntensity > 0.6) {
                         indicator.style.borderColor = '#ff6b6b';
@@ -845,7 +1007,7 @@
                 const level = Math.floor(blockCount / 5) + 1;
                 const el = document.getElementById('difficulty-level');
                 if (el) el.innerText = level;
-                
+
                 const indicator = document.getElementById('difficulty-indicator');
                 if (indicator) {
                     indicator.className = '';
@@ -870,40 +1032,40 @@
                     clearInterval(aiAnimInterval);
                     aiAnimInterval = null;
                 }
-                
+
                 blocks.forEach(b => {
                     if (b && b.id) Composite.remove(engine.world, b);
                 });
                 blocks = [];
-                
+
                 if (currentBlock) {
                     Composite.remove(engine.world, currentBlock);
                     currentBlock = null;
                 }
-                
+
                 tiltAngle = 0;
                 autoTiltTimer = 0;
                 tiltAmplitude = 0.025;
                 tiltFrequency = 0.018;
-                
+
                 if (platform) {
                     Body.setAngle(platform, 0);
                     platform.render.strokeStyle = '#ffd700';
                 }
-                
+
                 const indicator = document.getElementById('tilt-indicator');
                 indicator.innerText = '📐 Наклон: 0°';
                 indicator.style.borderColor = '#ffd700';
                 indicator.style.backgroundColor = 'rgba(255, 215, 0, 0.2)';
                 indicator.classList.remove('critical');
-                
+
                 blockCount = 0;
                 maxBlockCount = 0;
                 document.getElementById('current-height').innerText = '0';
-                
+
                 const recordBadge = document.querySelector('.record-badge');
                 if (recordBadge) recordBadge.remove();
-                
+
                 currentPlayer = 1;
                 gameActive = true;
                 isBlockPlaced = false;
@@ -912,17 +1074,17 @@
                 spawnBlock();
             }
 
-            // ============ СПАВН БЛОКА (ИСПРАВЛЕННАЯ ФИЗИКА) ============
+            // ============ СПАВН БЛОКА ============
             function spawnBlock() {
                 if (!gameActive) return;
                 isBlockPlaced = false;
                 updateHUD();
 
                 let highestY = CANVAS_HEIGHT - 60;
-                blocks.forEach(b => { 
-                    if (b.position.y < highestY) highestY = b.position.y; 
+                blocks.forEach(b => {
+                    if (b.position.y < highestY) highestY = b.position.y;
                 });
-                
+
                 spawnY = Math.max(150, highestY - 150);
                 if (spawnY < 100) {
                     gameActive = false;
@@ -937,12 +1099,9 @@
                 } else {
                     baseColor = gameMode === 'ai' ? COLORS.ai : COLORS.p2;
                 }
-                
+
                 currentBlockBaseColor = baseColor;
 
-                // ИСПРАВЛЕНИЕ: Блок создаётся как динамический (isStatic: false) 
-                // и сразу "усыпляется" (isSleeping: true). Это избегает бага Matter.js,
-                // когда при переключении setStatic(true->false) теряется масса.
                 currentBlock = Bodies.rectangle(CANVAS_WIDTH / 2, spawnY, BLOCK_WIDTH, BLOCK_HEIGHT, {
                     isStatic: false,
                     isSleeping: true,
@@ -950,7 +1109,7 @@
                     frictionStatic: 0.9,
                     restitution: 0.05,
                     density: 0.001,
-                    render: { 
+                    render: {
                         fillStyle: hexToRgba(baseColor, 0),
                         strokeStyle: 'rgba(255, 255, 255, 0)',
                         lineWidth: 3
@@ -958,13 +1117,12 @@
                     player: currentPlayer,
                     label: 'block'
                 });
-                
-                // Замораживаем скорость, чтобы блок точно не двигался пока спит
+
                 Body.setVelocity(currentBlock, { x: 0, y: 0 });
                 Body.setAngularVelocity(currentBlock, 0);
-                
+
                 Composite.add(engine.world, currentBlock);
-                
+
                 blockSpawnTime = Date.now();
                 startBlockFadeInAnimation();
 
@@ -975,29 +1133,27 @@
                 }
             }
 
-            // ============ АНИМАЦИЯ ПОЯВЛЕНИЯ (ТОЛЬКО ПРОЗРАЧНОСТЬ) ============
-            // ИСПРАВЛЕНИЕ: убрано Body.scale() - оно искажало хитбокс
             function startBlockFadeInAnimation() {
                 if (blockFadeInInterval) clearInterval(blockFadeInInterval);
-                
+
                 let opacity = 0;
                 const fadeStep = 0.06;
-                
+
                 blockFadeInInterval = setInterval(() => {
                     if (!currentBlock || !gameActive) {
                         clearInterval(blockFadeInInterval);
                         blockFadeInInterval = null;
                         return;
                     }
-                    
+
                     opacity += fadeStep;
-                    
+
                     if (opacity >= 1) {
                         opacity = 1;
                         clearInterval(blockFadeInInterval);
                         blockFadeInInterval = null;
                     }
-                    
+
                     currentBlock.render.fillStyle = hexToRgba(currentBlockBaseColor, opacity);
                     currentBlock.render.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
                 }, 25);
@@ -1038,10 +1194,10 @@
 
                 const canvas = render ? render.canvas : null;
                 if (!canvas) return;
-                
+
                 const rect = canvas.getBoundingClientRect();
                 const scaleX = CANVAS_WIDTH / rect.width;
-                
+
                 let mouseX = (e.clientX - rect.left) * scaleX;
                 mouseX = Math.max(BLOCK_WIDTH / 2 + 10, Math.min(CANVAS_WIDTH - BLOCK_WIDTH / 2 - 10, mouseX));
                 Body.setPosition(currentBlock, { x: mouseX, y: spawnY });
@@ -1051,15 +1207,15 @@
                 if (!gameActive || isBlockPlaced || !currentBlock) return;
                 if (gameMode === 'ai' && currentPlayer === 2) return;
                 if (Date.now() - blockSpawnTime < BLOCK_SPAWN_DELAY) return;
-                
+
                 e.preventDefault();
 
                 const canvas = render ? render.canvas : null;
                 if (!canvas) return;
-                
+
                 const rect = canvas.getBoundingClientRect();
                 const scaleX = CANVAS_WIDTH / rect.width;
-                
+
                 const touch = e.touches[0];
                 let touchX = (touch.clientX - rect.left) * scaleX;
                 touchX = Math.max(BLOCK_WIDTH / 2 + 10, Math.min(CANVAS_WIDTH - BLOCK_WIDTH / 2 - 10, touchX));
@@ -1069,12 +1225,11 @@
             window.addEventListener('touchstart', (e) => {
                 if (!gameActive || isBlockPlaced || !currentBlock) return;
                 if (gameMode === 'ai' && currentPlayer === 2) return;
-                
+
                 const touch = e.touches[0];
                 touchStartPos = { x: touch.clientX, y: touch.clientY };
             }, { passive: true });
 
-            // ИСПРАВЛЕНИЕ: touchend с preventDefault блокирует последующий click
             window.addEventListener('touchend', (e) => {
                 if (!gameActive || isBlockPlaced || !currentBlock) {
                     touchStartPos = null;
@@ -1084,15 +1239,15 @@
                     touchStartPos = null;
                     return;
                 }
-                
+
                 if (touchStartPos) {
                     const touch = e.changedTouches[0];
                     const dx = touch.clientX - touchStartPos.x;
                     const dy = touch.clientY - touchStartPos.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    
+
                     if (distance < 15) {
-                        e.preventDefault(); // Блокируем последующий click
+                        e.preventDefault();
                         lastTouchTime = Date.now();
                         dropBlock();
                     }
@@ -1100,44 +1255,40 @@
                 }
             }, { passive: false });
 
-            // ИСПРАВЛЕНИЕ: click игнорируется если был недавний touch
             window.addEventListener('click', (e) => {
-                if (Date.now() - lastTouchTime < 500) return; // Игнорируем клик после тача
+                if (Date.now() - lastTouchTime < 500) return;
                 if (!gameActive || isBlockPlaced || !currentBlock) return;
                 if (gameMode === 'ai' && currentPlayer === 2) return;
                 dropBlock();
             });
 
-            // ============ ДРОП БЛОКА (ИСПРАВЛЕННАЯ ФИЗИКА) ============
+            // ============ ДРОП БЛОКА ============
             function dropBlock() {
                 if (isBlockPlaced || !currentBlock) return;
-                
+
                 if (blockFadeInInterval) {
                     clearInterval(blockFadeInInterval);
                     blockFadeInInterval = null;
                 }
-                
-                // Устанавливаем финальные цвета
+
                 if (currentBlockBaseColor) {
                     currentBlock.render.fillStyle = currentBlockBaseColor;
                     currentBlock.render.strokeStyle = '#ffffff';
                 }
-                
+
                 isBlockPlaced = true;
-                
-                // ИСПРАВЛЕНИЕ: вместо setStatic(false) просто будим блок
-                // и обнуляем скорости - это сохраняет массу и инерцию
+
                 Sleeping.set(currentBlock, false);
                 Body.setVelocity(currentBlock, { x: 0, y: 0 });
                 Body.setAngularVelocity(currentBlock, 0);
-                
+
                 blocks.push(currentBlock);
                 blockCount++;
-                
+
                 if (blockCount > maxBlockCount) {
                     maxBlockCount = blockCount;
                     document.getElementById('current-height').innerText = maxBlockCount;
-                    
+
                     const records = loadRecords();
                     const recordKey = gameMode === 'ai' ? 'ai' : `p${currentPlayer}`;
                     if (maxBlockCount > records[recordKey]) {
@@ -1146,7 +1297,7 @@
                         showRecordBadge(maxBlockCount);
                     }
                 }
-                
+
                 currentBlock = null;
                 currentBlockBaseColor = null;
                 playSound('drop');
@@ -1162,22 +1313,21 @@
             function showRecordBadge(height) {
                 const existingBadge = document.querySelector('.record-badge');
                 if (existingBadge) existingBadge.remove();
-                
+
                 const badge = document.createElement('div');
                 badge.className = 'record-badge';
                 badge.innerText = `🏆 НОВЫЙ РЕКОРД: ${height}!`;
                 document.getElementById('game-container').appendChild(badge);
-                
+
                 setTimeout(() => {
                     if (badge.parentNode) badge.remove();
                 }, 3000);
             }
 
-            // ============ ХОД ИИ (С ЗАЩИТОЙ) ============
+            // ============ ХОД ИИ ============
             function makeAIMove() {
                 if (!gameActive || !currentBlock) return;
-                
-                // Очищаем предыдущий интервал если есть
+
                 if (aiAnimInterval) {
                     clearInterval(aiAnimInterval);
                     aiAnimInterval = null;
@@ -1197,13 +1347,12 @@
                 let currentX = currentBlock.position.x;
                 const steps = 15;
                 let currentStep = 0;
-                
+
                 aiAnimInterval = setInterval(() => {
-                    // ИСПРАВЛЕНИЕ: защита от null currentBlock
-                    if (!gameActive || !currentBlock) { 
+                    if (!gameActive || !currentBlock) {
                         clearInterval(aiAnimInterval);
                         aiAnimInterval = null;
-                        return; 
+                        return;
                     }
                     currentX += (targetX - currentX) / (steps - currentStep + 1);
                     Body.setPosition(currentBlock, { x: currentX, y: spawnY });
@@ -1218,16 +1367,16 @@
 
             function checkTowerStability() {
                 if (!gameActive) return;
-                
+
                 const now = Date.now();
                 if (now - lastStabilityCheck < 200) return;
                 lastStabilityCheck = now;
 
                 let fallen = false;
-                
+
                 blocks.forEach(block => {
                     if (!block || !block.position) return;
-                    
+
                     if (block.position.y > CANVAS_HEIGHT + 50 ||
                         block.position.x < -50 ||
                         block.position.x > CANVAS_WIDTH + 50) {
@@ -1238,13 +1387,13 @@
                 if (fallen) {
                     gameActive = false;
                     playSound('fail');
-                    
+
                     const loser = currentPlayer;
                     const winner = loser === 1 ? 2 : 1;
-                    
+
                     if (winner === 1) scores.p1++;
                     else scores.p2++;
-                    
+
                     showGameOverScreen(winner);
                     return;
                 }
@@ -1272,7 +1421,6 @@
                 document.getElementById('score-p2').innerText = scores.p2;
             }
 
-            // ИСПРАВЛЕНИЕ: убраны пустые скобки в именах победителей
             function showGameOverScreen(winner) {
                 document.getElementById('hud-favicon').style.display = 'none';
                 const screen = document.getElementById('gameover-screen');
@@ -1304,11 +1452,11 @@
                 scores = { p1: 0, p2: 0 };
                 document.getElementById('score-p1').innerText = '0';
                 document.getElementById('score-p2').innerText = '0';
-                
+
                 const p2Label = mode === 'ai' ? '🤖' : '🔴';
                 const p2Color = mode === 'ai' ? '#00f5d4' : '#0f3460';
                 document.getElementById('p2-score-box').innerHTML = `${p2Label} <span id="score-p2" class="score-val" style="color:${p2Color};">0</span>`;
-                
+
                 document.getElementById('menu-screen').classList.add('hidden');
                 document.getElementById('hud-favicon').style.display = 'block';
                 createSnow();
@@ -1323,7 +1471,6 @@
                 resetRoundState();
             };
 
-            // ИСПРАВЛЕНИЕ: очищаем aiAnimInterval при выходе в меню
             window.backToMenu = function() {
                 if (blockFadeInInterval) {
                     clearInterval(blockFadeInInterval);
@@ -1333,27 +1480,27 @@
                     clearInterval(aiAnimInterval);
                     aiAnimInterval = null;
                 }
-                
+
                 const screen = document.getElementById('gameover-screen');
                 screen.classList.add('hidden');
                 document.getElementById('hud-favicon').style.display = 'none';
                 document.getElementById('menu-screen').classList.remove('hidden');
                 removeSnow();
-                
+
                 if (runner) { Runner.stop(runner); runner = null; }
                 if (engine) { Engine.clear(engine); engine = null; }
                 if (render) { Render.stop(render); render = null; }
-                
+
                 const placeholder = document.getElementById('canvas-placeholder');
                 placeholder.innerHTML = '';
-                
+
                 const recordBadge = document.querySelector('.record-badge');
                 if (recordBadge) recordBadge.remove();
             };
 
             window.copyPhone = function() {
                 const phoneNumber = '8-920-227-56-76';
-                
+
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(phoneNumber).then(() => {
                         showToast('✅ Номер скопирован: ' + phoneNumber);
@@ -1372,14 +1519,14 @@
                 textArea.style.left = '-999999px';
                 document.body.appendChild(textArea);
                 textArea.select();
-                
+
                 try {
                     document.execCommand('copy');
                     showToast('✅ Номер скопирован: ' + text);
                 } catch (err) {
                     alert('Номер: ' + text);
                 }
-                
+
                 document.body.removeChild(textArea);
             }
 
@@ -1395,7 +1542,7 @@
                 `;
                 toast.innerText = message;
                 document.body.appendChild(toast);
-                
+
                 setTimeout(() => {
                     if (toast.parentNode) toast.remove();
                 }, 2000);
@@ -1421,7 +1568,7 @@
                 }
                 requestAnimationFrame(gameLoop);
             }
-            
+
             requestAnimationFrame(gameLoop);
 
             window.addEventListener('resize', () => {
